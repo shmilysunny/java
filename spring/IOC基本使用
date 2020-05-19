@@ -35,7 +35,7 @@
   注意：通过bean的类型在查找对象的时候，在配置文件中不能存在两个类型一致的bean对象
 
 spring属性赋值方式
-1.setter方法
+1.setter方法，需要一个无参构造函数
   例：
     <bean id="person" class="com.zx.bean.Person">
         <property name="id" value="1"></property>
