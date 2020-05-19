@@ -4,3 +4,91 @@
 3、对象在IOC容器中存储的时候都是单例的，如果需要多例需要修改属性
 4、创建对象给属性赋值的时候是通过setter方法实现的
 5、对象的属性是由setter/getter方法决定的，而不是定义的成员属性
+
+常用的spring对象的获取方式
+1.通过bean的id获取IOC容器中的对象
+  例：
+    import com.mashibing.bean.Person;
+    import org.springframework.context.ApplicationContext;
+    import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+    public class MyTest {
+        public static void main(String[] args) {
+            ApplicationContext context = new ClassPathXmlApplicationContext("ioc.xml");
+            Person person = context.getBean("person", Person.class);
+            System.out.println(person);
+        }
+    }
+2.通过bean的类型获取对象
+  例：
+    import com.mashibing.bean.Person;
+    import org.springframework.context.ApplicationContext;
+    import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+    public class MyTest {
+        public static void main(String[] args) {
+            ApplicationContext context = new ClassPathXmlApplicationContext("ioc.xml");
+            Person bean = context.getBean(Person.class);
+            System.out.println(bean);
+        }
+    }
+  注意：通过bean的类型在查找对象的时候，在配置文件中不能存在两个类型一致的bean对象
+
+spring属性赋值方式
+1.setter方法
+  例：
+    <bean id="person" class="com.zx.bean.Person">
+        <property name="id" value="1"></property>
+        <property name="age" value="10"></property>
+        <property name="name" value="zhangsan"></property>
+        <property name="gender" value="male"></property>
+    </bean>
+2.构造器
+  例：
+    <!--给person类添加构造方法-->
+    <bean id="person2" class="com.mashibing.bean.Person">
+        <constructor-arg name="id" value="1"></constructor-arg>
+        <constructor-arg name="name" value="lisi"></constructor-arg>
+        <constructor-arg name="age" value="20"></constructor-arg>
+        <constructor-arg name="gender" value="女"></constructor-arg>
+    </bean>
+    <!--在使用构造器赋值的时候可以省略name属性，但是此时就要求必须严格按照构造器参数的顺序来填写了-->
+    <bean id="person3" class="com.mashibing.bean.Person">
+        <constructor-arg value="1"></constructor-arg>
+        <constructor-arg value="lisi"></constructor-arg>
+        <constructor-arg value="20"></constructor-arg>
+        <constructor-arg value="女"></constructor-arg>
+    </bean>
+	  <!--如果想不按照顺序来添加参数值，那么可以搭配index属性来使用-->
+    <bean id="person4" class="com.mashibing.bean.Person">
+        <constructor-arg value="lisi" index="1"></constructor-arg>
+        <constructor-arg value="1" index="0"></constructor-arg>
+        <constructor-arg value="女" index="3"></constructor-arg>
+        <constructor-arg value="20" index="2"></constructor-arg>
+    </bean>
+    <!--当有多个参数个数相同，不同类型的构造器的时候，可以通过type来强制类型-->
+    将person的age类型设置为Integer类型
+    public Person(int id, String name, Integer age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        System.out.println("Age");
+     }
+    public Person(int id, String name, String gender) {
+        this.id = id;
+        this.name = name;
+        this.gender = gender;
+        System.out.println("gender");
+    }
+	  <bean id="person5" class="com.mashibing.bean.Person">
+        <constructor-arg value="1"></constructor-arg>
+        <constructor-arg value="lisi"></constructor-arg>
+        <constructor-arg value="20" type="java.lang.Integer"></constructor-arg>
+    </bean>
+	  <!--如果不修改为integer类型，那么需要type跟index组合使用-->
+	  <bean id="person5" class="com.mashibing.bean.Person">
+        <constructor-arg value="1"></constructor-arg>
+        <constructor-arg value="lisi"></constructor-arg>
+        <constructor-arg value="20" type="int" index="2"></constructor-arg>
+    </bean>
+
