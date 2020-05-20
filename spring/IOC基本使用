@@ -8,7 +8,7 @@
 常用的spring对象的获取方式
 1.通过bean的id获取IOC容器中的对象
   例：
-    import com.mashibing.bean.Person;
+    import com.study.bean.Person;
     import org.springframework.context.ApplicationContext;
     import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -21,7 +21,7 @@
     }
 2.通过bean的类型获取对象
   例：
-    import com.mashibing.bean.Person;
+    import com.study.bean.Person;
     import org.springframework.context.ApplicationContext;
     import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -37,7 +37,7 @@
 spring属性赋值方式
 1.setter方法，需要一个无参构造函数
   例：
-    <bean id="person" class="com.zx.bean.Person">
+    <bean id="person" class="com.study.bean.Person">
         <property name="id" value="1"></property>
         <property name="age" value="10"></property>
         <property name="name" value="zhangsan"></property>
@@ -46,21 +46,21 @@ spring属性赋值方式
 2.构造器
   例：
     <!--给person类添加构造方法-->
-    <bean id="person2" class="com.mashibing.bean.Person">
+    <bean id="person2" class="com.study.bean.Person">
         <constructor-arg name="id" value="1"></constructor-arg>
         <constructor-arg name="name" value="lisi"></constructor-arg>
         <constructor-arg name="age" value="20"></constructor-arg>
         <constructor-arg name="gender" value="女"></constructor-arg>
     </bean>
     <!--在使用构造器赋值的时候可以省略name属性，但是此时就要求必须严格按照构造器参数的顺序来填写了-->
-    <bean id="person3" class="com.mashibing.bean.Person">
+    <bean id="person3" class="com.study.bean.Person">
         <constructor-arg value="1"></constructor-arg>
         <constructor-arg value="lisi"></constructor-arg>
         <constructor-arg value="20"></constructor-arg>
         <constructor-arg value="女"></constructor-arg>
     </bean>
     <!--如果想不按照顺序来添加参数值，那么可以搭配index属性来使用-->
-    <bean id="person4" class="com.mashibing.bean.Person">
+    <bean id="person4" class="com.study.bean.Person">
         <constructor-arg value="lisi" index="1"></constructor-arg>
         <constructor-arg value="1" index="0"></constructor-arg>
         <constructor-arg value="女" index="3"></constructor-arg>
@@ -80,13 +80,13 @@ spring属性赋值方式
         this.gender = gender;
         System.out.println("gender");
     }
-    <bean id="person5" class="com.mashibing.bean.Person">
+    <bean id="person5" class="com.study.bean.Person">
         <constructor-arg value="1"></constructor-arg>
         <constructor-arg value="lisi"></constructor-arg>
         <constructor-arg value="20" type="java.lang.Integer"></constructor-arg>
     </bean>
     <!--如果不修改为integer类型，那么需要type跟index组合使用-->
-    <bean id="person5" class="com.mashibing.bean.Person">
+    <bean id="person5" class="com.study.bean.Person">
         <constructor-arg value="1"></constructor-arg>
         <constructor-arg value="lisi"></constructor-arg>
         <constructor-arg value="20" type="int" index="2"></constructor-arg>
@@ -99,80 +99,109 @@ spring属性赋值方式
 		   xmlns:p="http://www.springframework.org/schema/p"
 		   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 	2、添加配置
-	<bean id="person6" class="com.mashibing.bean.Person" p:id="3" p:name="wangwu" p:age="22" p:gender="男"></bean>
+	<bean id="person6" class="com.study.bean.Person" p:id="3" p:name="wangwu" p:age="22" p:gender="男"></bean>
 4、为复杂类型进行赋值操作
 	<!--给复杂类型的赋值都在property标签内进行-->
-	<bean id="person" class="com.mashibing.bean.Person">
+	<bean id="person" class="com.study.bean.Person">
 		<!--给数组赋值-->
-        <property name="hobbies">
-            <array>
-                <value>book</value>
-                <value>movie</value>
-                <value>game</value>
-            </array>
-        </property>
+		<property name="hobbies">
+				<array>
+						<value>book</value>
+						<value>movie</value>
+						<value>game</value>
+				</array>
+		</property>
 		<!--给set赋值-->
-        <property name="sets">
-            <set>
-                <value>111</value>
-                <value>222</value>
-                <value>222</value>
-            </set>
-        </property>
+		<property name="sets">
+				<set>
+						<value>111</value>
+						<value>222</value>
+						<value>222</value>
+				</set>
+		</property>
 		<!--为list赋值-->
-        <property name="books">
-            <list>
-                <!--内部bean-->
-                <bean id="book1" class="com.mashibing.bean.Book">
-                    <property name="name" value="JVM"></property>
-                    <property name="author" value="xxx"></property>
-                    <property name="price" value="10"></property>
-                </bean>
-                <!--外部bean-->
-                <ref bean="book2"></ref>
-            </list>
-        </property>
+		<property name="books">
+				<list>
+						<!--内部bean-->
+						<bean id="book1" class="com.study.bean.Book">
+								<property name="name" value="JVM"></property>
+								<property name="author" value="xxx"></property>
+								<property name="price" value="10"></property>
+						</bean>
+						<!--外部bean-->
+						<ref bean="book2"></ref>
+				</list>
+		</property>
 		<!--通过ref引用其他对象，引用外部bean-->
-        <!--<property name="address" ref="address"></property>-->
+		<!--<property name="address" ref="address"></property>-->
 		<!--或者-->
-        <property name="address">
-            <bean class="com.mashibing.bean.Address">
-                <property name="province" value="beijing"></property>
-            </bean>
-        </property>
+		<property name="address">
+				<bean class="com.study.bean.Address">
+						<property name="province" value="beijing"></property>
+				</bean>
+		</property>
 		<!--给map赋值-->
-        <property name="maps">
-            <map>
-                <entry key="a" value="aaa"></entry>
-                <entry key="address" value-ref="addr"></entry>
-                <entry key="address2">
-                    <bean class="com.zx.bean.Address">
-                        <property name="province" value="shenzhen"></property>
-                    </bean>
-                </entry>
-                <entry>
-                    <key>
-                        <value>b</value>
-                    </key>
-                    <value>bbb</value>
-                </entry>
-            </map>
-        </property>
+		<property name="maps">
+				<map>
+						<entry key="a" value="aaa"></entry>
+						<entry key="address" value-ref="addr"></entry>
+						<entry key="address2">
+								<bean class="com.zx.bean.Address">
+										<property name="province" value="shenzhen"></property>
+								</bean>
+						</entry>
+						<entry>
+								<key>
+										<value>b</value>
+								</key>
+								<value>bbb</value>
+						</entry>
+				</map>
+		</property>
 		<!--给property赋值-->
-        <property name="properties">
-            <props>
-                <prop key="aaa">aaa</prop>
-                <prop key="bbb">222</prop>
-            </props>
-        </property>
+		<property name="properties">
+				<props>
+						<prop key="aaa">aaa</prop>
+						<prop key="bbb">222</prop>
+				</props>
+		</property>
 	</bean>
-	<bean id="address" class="com.mashibing.bean.Address">
-        <property name="province" value="河北"></property>
-        <property name="city" value="邯郸"></property>
-        <property name="town" value="武安"></property>
-    </bean>
-	<bean id="book2" class="com.mashibing.bean.Book">
-        <property name="name" value="JVM"></property>
-        <property name="author" value="X"></property>
-        <property name="price" value="12"></property>
-    </bean>
+	<bean id="address" class="com.study.bean.Address">
+		<property name="province" value="河北"></property>
+		<property name="city" value="邯郸"></property>
+		<property name="town" value="武安"></property>
+  </bean>
+	<bean id="book2" class="com.study.bean.Book">
+		<property name="name" value="JVM"></property>
+		<property name="author" value="X"></property>
+		<property name="price" value="12"></property>
+  </bean>
+	
+	继承关系bean的配置
+	<bean id="person" class="com.study.bean.Person">
+		<property name="id" value="1"></property>
+		<property name="name" value="zhangsan"></property>
+		<property name="age" value="21"></property>
+		<property name="gender" value="男"></property>
+	</bean>
+	<!--parent:指定bean的配置信息继承于哪个bean-->
+	<bean id="person2" class="com.study.bean.Person" parent="person">
+		<property name="name" value="lisi"></property>
+	</bean>
+	如果想实现Java文件的抽象类，不需要将当前bean实例化的话，可以使用abstract属性
+	<bean id="person" class="com.study.bean.Person" abstract="true">
+		<property name="id" value="1"></property>
+		<property name="name" value="zhangsan"></property>
+		<property name="age" value="21"></property>
+		<property name="gender" value="男"></property>
+	</bean>
+	<!--parent:指定bean的配置信息继承于哪个bean-->
+	<bean id="person2" class="com.study.bean.Person" parent="person">
+		<property name="name" value="lisi"></property>
+	</bean>
+	
+	bean对象创建的依赖关系
+	bean对象在创建的时候是按照bean在配置文件的顺序决定的，也可以使用depend-on标签来决定顺序,实际工作中不需要关注bean的创建顺序
+	<bean id="book" class="com.study.bean.Book" depends-on="person,address"></bean>
+	<bean id="address" class="com.study.bean.Address"></bean>
+	<bean id="person" class="com.study.bean.Person"></bean>
