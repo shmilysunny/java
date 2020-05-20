@@ -59,7 +59,7 @@ spring属性赋值方式
         <constructor-arg value="20"></constructor-arg>
         <constructor-arg value="女"></constructor-arg>
     </bean>
-	  <!--如果想不按照顺序来添加参数值，那么可以搭配index属性来使用-->
+    <!--如果想不按照顺序来添加参数值，那么可以搭配index属性来使用-->
     <bean id="person4" class="com.mashibing.bean.Person">
         <constructor-arg value="lisi" index="1"></constructor-arg>
         <constructor-arg value="1" index="0"></constructor-arg>
@@ -80,15 +80,99 @@ spring属性赋值方式
         this.gender = gender;
         System.out.println("gender");
     }
-	  <bean id="person5" class="com.mashibing.bean.Person">
+    <bean id="person5" class="com.mashibing.bean.Person">
         <constructor-arg value="1"></constructor-arg>
         <constructor-arg value="lisi"></constructor-arg>
         <constructor-arg value="20" type="java.lang.Integer"></constructor-arg>
     </bean>
-	  <!--如果不修改为integer类型，那么需要type跟index组合使用-->
-	  <bean id="person5" class="com.mashibing.bean.Person">
+    <!--如果不修改为integer类型，那么需要type跟index组合使用-->
+    <bean id="person5" class="com.mashibing.bean.Person">
         <constructor-arg value="1"></constructor-arg>
         <constructor-arg value="lisi"></constructor-arg>
         <constructor-arg value="20" type="int" index="2"></constructor-arg>
+    </bean> 
+3.通过命名空间为bean赋值，简化配置文件中属性声明的写法
+	1、导入命名空间
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+		   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		   xmlns:p="http://www.springframework.org/schema/p"
+		   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	2、添加配置
+	<bean id="person6" class="com.mashibing.bean.Person" p:id="3" p:name="wangwu" p:age="22" p:gender="男"></bean>
+4、为复杂类型进行赋值操作
+	<!--给复杂类型的赋值都在property标签内进行-->
+	<bean id="person" class="com.mashibing.bean.Person">
+		<!--给数组赋值-->
+        <property name="hobbies">
+            <array>
+                <value>book</value>
+                <value>movie</value>
+                <value>game</value>
+            </array>
+        </property>
+		<!--给set赋值-->
+        <property name="sets">
+            <set>
+                <value>111</value>
+                <value>222</value>
+                <value>222</value>
+            </set>
+        </property>
+		<!--为list赋值-->
+        <property name="books">
+            <list>
+                <!--内部bean-->
+                <bean id="book1" class="com.mashibing.bean.Book">
+                    <property name="name" value="JVM"></property>
+                    <property name="author" value="xxx"></property>
+                    <property name="price" value="10"></property>
+                </bean>
+                <!--外部bean-->
+                <ref bean="book2"></ref>
+            </list>
+        </property>
+		<!--通过ref引用其他对象，引用外部bean-->
+        <!--<property name="address" ref="address"></property>-->
+		<!--或者-->
+        <property name="address">
+            <bean class="com.mashibing.bean.Address">
+                <property name="province" value="beijing"></property>
+            </bean>
+        </property>
+		<!--给map赋值-->
+        <property name="maps">
+            <map>
+                <entry key="a" value="aaa"></entry>
+                <entry key="address" value-ref="addr"></entry>
+                <entry key="address2">
+                    <bean class="com.zx.bean.Address">
+                        <property name="province" value="shenzhen"></property>
+                    </bean>
+                </entry>
+                <entry>
+                    <key>
+                        <value>b</value>
+                    </key>
+                    <value>bbb</value>
+                </entry>
+            </map>
+        </property>
+		<!--给property赋值-->
+        <property name="properties">
+            <props>
+                <prop key="aaa">aaa</prop>
+                <prop key="bbb">222</prop>
+            </props>
+        </property>
+	</bean>
+	<bean id="address" class="com.mashibing.bean.Address">
+        <property name="province" value="河北"></property>
+        <property name="city" value="邯郸"></property>
+        <property name="town" value="武安"></property>
     </bean>
-
+	<bean id="book2" class="com.mashibing.bean.Book">
+        <property name="name" value="JVM"></property>
+        <property name="author" value="X"></property>
+        <property name="price" value="12"></property>
+    </bean>
