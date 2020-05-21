@@ -158,6 +158,8 @@ spring属性赋值方式
 				</entry>
 			</map>
 		</property>
+		<!-- 或者 -->
+		<property name="maps" ref="myMap"></property>
 		<!--给property赋值-->
 		<property name="properties">
 			<props>
@@ -176,6 +178,18 @@ spring属性赋值方式
 		<property name="author" value="X"></property>
 		<property name="price" value="12"></property>
   </bean>
+ 	<!--util名称空间创建集合类型的bean-->
+	<util:map id="myMap">
+		<entry key="key1" value="value1"></entry>
+		<entry key="key2" value-ref="book2"></entry>
+		<entry key="key03">
+			<bean class="com.mashibing.bean.Book">
+				<property name="name" value="西游记" ></property>
+				<property name="author" value="吴承恩" ></property>
+				<property name="price" value="100" ></property>
+			</bean>
+		</entry>
+	</util:map>
 	
 	继承关系bean的配置
 	<bean id="person" class="com.study.bean.Person">
