@@ -37,60 +37,60 @@
 spring属性赋值方式
 1.setter方法，需要一个无参构造函数
   例：
-    <bean id="person" class="com.study.bean.Person">
-        <property name="id" value="1"></property>
-        <property name="age" value="10"></property>
-        <property name="name" value="zhangsan"></property>
-        <property name="gender" value="male"></property>
-    </bean>
+	<bean id="person" class="com.study.bean.Person">
+			<property name="id" value="1"></property>
+			<property name="age" value="10"></property>
+			<property name="name" value="zhangsan"></property>
+			<property name="gender" value="male"></property>
+	</bean>
 2.构造器
   例：
-    <!--给person类添加构造方法-->
-    <bean id="person2" class="com.study.bean.Person">
-        <constructor-arg name="id" value="1"></constructor-arg>
-        <constructor-arg name="name" value="lisi"></constructor-arg>
-        <constructor-arg name="age" value="20"></constructor-arg>
-        <constructor-arg name="gender" value="女"></constructor-arg>
-    </bean>
-    <!--在使用构造器赋值的时候可以省略name属性，但是此时就要求必须严格按照构造器参数的顺序来填写了-->
-    <bean id="person3" class="com.study.bean.Person">
-        <constructor-arg value="1"></constructor-arg>
-        <constructor-arg value="lisi"></constructor-arg>
-        <constructor-arg value="20"></constructor-arg>
-        <constructor-arg value="女"></constructor-arg>
-    </bean>
-    <!--如果想不按照顺序来添加参数值，那么可以搭配index属性来使用-->
-    <bean id="person4" class="com.study.bean.Person">
-        <constructor-arg value="lisi" index="1"></constructor-arg>
-        <constructor-arg value="1" index="0"></constructor-arg>
-        <constructor-arg value="女" index="3"></constructor-arg>
-        <constructor-arg value="20" index="2"></constructor-arg>
-    </bean>
-    <!--当有多个参数个数相同，不同类型的构造器的时候，可以通过type来强制类型-->
-    将person的age类型设置为Integer类型
-    public Person(int id, String name, Integer age) {
-        this.id = id;
-        this.name = name;
-        this.age = age;
-        System.out.println("Age");
-     }
-    public Person(int id, String name, String gender) {
-        this.id = id;
-        this.name = name;
-        this.gender = gender;
-        System.out.println("gender");
-    }
-    <bean id="person5" class="com.study.bean.Person">
-        <constructor-arg value="1"></constructor-arg>
-        <constructor-arg value="lisi"></constructor-arg>
-        <constructor-arg value="20" type="java.lang.Integer"></constructor-arg>
-    </bean>
-    <!--如果不修改为integer类型，那么需要type跟index组合使用-->
-    <bean id="person5" class="com.study.bean.Person">
-        <constructor-arg value="1"></constructor-arg>
-        <constructor-arg value="lisi"></constructor-arg>
-        <constructor-arg value="20" type="int" index="2"></constructor-arg>
-    </bean> 
+	<!--给person类添加构造方法-->
+	<bean id="person2" class="com.study.bean.Person">
+			<constructor-arg name="id" value="1"></constructor-arg>
+			<constructor-arg name="name" value="lisi"></constructor-arg>
+			<constructor-arg name="age" value="20"></constructor-arg>
+			<constructor-arg name="gender" value="女"></constructor-arg>
+	</bean>
+	<!--在使用构造器赋值的时候可以省略name属性，但是此时就要求必须严格按照构造器参数的顺序来填写了-->
+	<bean id="person3" class="com.study.bean.Person">
+			<constructor-arg value="1"></constructor-arg>
+			<constructor-arg value="lisi"></constructor-arg>
+			<constructor-arg value="20"></constructor-arg>
+			<constructor-arg value="女"></constructor-arg>
+	</bean>
+	<!--如果想不按照顺序来添加参数值，那么可以搭配index属性来使用-->
+	<bean id="person4" class="com.study.bean.Person">
+			<constructor-arg value="lisi" index="1"></constructor-arg>
+			<constructor-arg value="1" index="0"></constructor-arg>
+			<constructor-arg value="女" index="3"></constructor-arg>
+			<constructor-arg value="20" index="2"></constructor-arg>
+	</bean>
+	<!--当有多个参数个数相同，不同类型的构造器的时候，可以通过type来强制类型-->
+	将person的age类型设置为Integer类型
+	public Person(int id, String name, Integer age) {
+			this.id = id;
+			this.name = name;
+			this.age = age;
+			System.out.println("Age");
+	 }
+	public Person(int id, String name, String gender) {
+			this.id = id;
+			this.name = name;
+			this.gender = gender;
+			System.out.println("gender");
+	}
+	<bean id="person5" class="com.study.bean.Person">
+			<constructor-arg value="1"></constructor-arg>
+			<constructor-arg value="lisi"></constructor-arg>
+			<constructor-arg value="20" type="java.lang.Integer"></constructor-arg>
+	</bean>
+	<!--如果不修改为integer类型，那么需要type跟index组合使用-->
+	<bean id="person5" class="com.study.bean.Person">
+			<constructor-arg value="1"></constructor-arg>
+			<constructor-arg value="lisi"></constructor-arg>
+			<constructor-arg value="20" type="int" index="2"></constructor-arg>
+	</bean> 
 3.通过命名空间为bean赋值，简化配置文件中属性声明的写法
 	1、导入命名空间
 	<?xml version="1.0" encoding="UTF-8"?>
@@ -101,121 +101,176 @@ spring属性赋值方式
 	2、添加配置
 	<bean id="person6" class="com.study.bean.Person" p:id="3" p:name="wangwu" p:age="22" p:gender="男"></bean>
 4、为复杂类型进行赋值操作
-	<!--给复杂类型的赋值都在property标签内进行-->
-	<bean id="person" class="com.study.bean.Person">
-		<!--给数组赋值-->
-		<property name="hobbies">
-			<array>
-				<value>book</value>
-				<value>movie</value>
-				<value>game</value>
-			</array>
-		</property>
-		<!--给set赋值-->
-		<property name="sets">
-			<set>
-				<value>111</value>
-				<value>222</value>
-				<value>222</value>
-			</set>
-		</property>
-		<!--为list赋值-->
-		<property name="books">
-			<list>
-				<!--内部bean-->
-				<bean id="book1" class="com.study.bean.Book">
-					<property name="name" value="JVM"></property>
-					<property name="author" value="xxx"></property>
-					<property name="price" value="10"></property>
+<!--给复杂类型的赋值都在property标签内进行-->
+<bean id="person" class="com.study.bean.Person">
+	<!--给数组赋值-->
+	<property name="hobbies">
+		<array>
+			<value>book</value>
+			<value>movie</value>
+			<value>game</value>
+		</array>
+	</property>
+	<!--给set赋值-->
+	<property name="sets">
+		<set>
+			<value>111</value>
+			<value>222</value>
+			<value>222</value>
+		</set>
+	</property>
+	<!--为list赋值-->
+	<property name="books">
+		<list>
+			<!--内部bean-->
+			<bean id="book1" class="com.study.bean.Book">
+				<property name="name" value="JVM"></property>
+				<property name="author" value="xxx"></property>
+				<property name="price" value="10"></property>
+			</bean>
+			<!--外部bean-->
+			<ref bean="book2"></ref>
+		</list>
+	</property>
+	<!--通过ref引用其他对象，引用外部bean-->
+	<!--<property name="address" ref="address"></property>-->
+	<!--或者-->
+	<property name="address">
+		<bean class="com.study.bean.Address">
+			<property name="province" value="beijing"></property>
+		</bean>
+	</property>
+	<!--给map赋值-->
+	<property name="maps">
+		<map>
+			<entry key="a" value="aaa"></entry>
+			<entry key="address" value-ref="addr"></entry>
+			<entry key="address2">
+				<bean class="com.zx.bean.Address">
+					<property name="province" value="shenzhen"></property>
 				</bean>
-				<!--外部bean-->
-				<ref bean="book2"></ref>
-			</list>
-		</property>
-		<!--通过ref引用其他对象，引用外部bean-->
-		<!--<property name="address" ref="address"></property>-->
-		<!--或者-->
-		<property name="address">
-			<bean class="com.study.bean.Address">
-				<property name="province" value="beijing"></property>
-			</bean>
-		</property>
-		<!--给map赋值-->
-		<property name="maps">
-			<map>
-				<entry key="a" value="aaa"></entry>
-				<entry key="address" value-ref="addr"></entry>
-				<entry key="address2">
-					<bean class="com.zx.bean.Address">
-						<property name="province" value="shenzhen"></property>
-					</bean>
-				</entry>
-				<entry>
-					<key>
-						<value>b</value>
-					</key>
-					<value>bbb</value>
-				</entry>
-			</map>
-		</property>
-		<!-- 或者 -->
-		<property name="maps" ref="myMap"></property>
-		<!--给property赋值-->
-		<property name="properties">
-			<props>
-				<prop key="aaa">aaa</prop>
-				<prop key="bbb">222</prop>
-			</props>
-		</property>
-	</bean>
-	<bean id="address" class="com.study.bean.Address">
-		<property name="province" value="河北"></property>
-		<property name="city" value="邯郸"></property>
-		<property name="town" value="武安"></property>
-  </bean>
-	<bean id="book2" class="com.study.bean.Book">
-		<property name="name" value="JVM"></property>
-		<property name="author" value="X"></property>
-		<property name="price" value="12"></property>
-  </bean>
- 	<!--util名称空间创建集合类型的bean-->
-	<util:map id="myMap">
-		<entry key="key1" value="value1"></entry>
-		<entry key="key2" value-ref="book2"></entry>
-		<entry key="key03">
-			<bean class="com.mashibing.bean.Book">
-				<property name="name" value="西游记" ></property>
-				<property name="author" value="吴承恩" ></property>
-				<property name="price" value="100" ></property>
-			</bean>
-		</entry>
-	</util:map>
+			</entry>
+			<entry>
+				<key>
+					<value>b</value>
+				</key>
+				<value>bbb</value>
+			</entry>
+		</map>
+	</property>
+	<!-- 或者 -->
+	<property name="maps" ref="myMap"></property>
+	<!--给property赋值-->
+	<property name="properties">
+		<props>
+			<prop key="aaa">aaa</prop>
+			<prop key="bbb">222</prop>
+		</props>
+	</property>
+</bean>
+<bean id="address" class="com.study.bean.Address">
+	<property name="province" value="河北"></property>
+	<property name="city" value="邯郸"></property>
+	<property name="town" value="武安"></property>
+</bean>
+<bean id="book2" class="com.study.bean.Book">
+	<property name="name" value="JVM"></property>
+	<property name="author" value="X"></property>
+	<property name="price" value="12"></property>
+</bean>
+<!--util名称空间创建集合类型的bean-->
+<util:map id="myMap">
+	<entry key="key1" value="value1"></entry>
+	<entry key="key2" value-ref="book2"></entry>
+	<entry key="key03">
+		<bean class="com.study.bean.Book">
+			<property name="name" value="西游记" ></property>
+			<property name="author" value="吴承恩" ></property>
+			<property name="price" value="100" ></property>
+		</bean>
+	</entry>
+</util:map>
 	
-	继承关系bean的配置
-	<bean id="person" class="com.study.bean.Person">
-		<property name="id" value="1"></property>
-		<property name="name" value="zhangsan"></property>
-		<property name="age" value="21"></property>
-		<property name="gender" value="男"></property>
-	</bean>
-	<!--parent:指定bean的配置信息继承于哪个bean-->
-	<bean id="person2" class="com.study.bean.Person" parent="person">
-		<property name="name" value="lisi"></property>
-	</bean>
-	如果想实现Java文件的抽象类，不需要将当前bean实例化的话，可以使用abstract属性
-	<bean id="person" class="com.study.bean.Person" abstract="true">
-		<property name="id" value="1"></property>
-		<property name="name" value="zhangsan"></property>
-		<property name="age" value="21"></property>
-		<property name="gender" value="男"></property>
-	</bean>
-	<!--parent:指定bean的配置信息继承于哪个bean-->
-	<bean id="person2" class="com.study.bean.Person" parent="person">
-		<property name="name" value="lisi"></property>
-	</bean>
+继承关系bean的配置
+<bean id="person" class="com.study.bean.Person">
+	<property name="id" value="1"></property>
+	<property name="name" value="zhangsan"></property>
+	<property name="age" value="21"></property>
+	<property name="gender" value="男"></property>
+</bean>
+<!--parent:指定bean的配置信息继承于哪个bean-->
+<bean id="person2" class="com.study.bean.Person" parent="person">
+	<property name="name" value="lisi"></property>
+</bean>
+如果想实现Java文件的抽象类，不需要将当前bean实例化的话，可以使用abstract属性
+<bean id="person" class="com.study.bean.Person" abstract="true">
+	<property name="id" value="1"></property>
+	<property name="name" value="zhangsan"></property>
+	<property name="age" value="21"></property>
+	<property name="gender" value="男"></property>
+</bean>
+<!--parent:指定bean的配置信息继承于哪个bean-->
+<bean id="person2" class="com.study.bean.Person" parent="person">
+	<property name="name" value="lisi"></property>
+</bean>
 	
-	bean对象创建的依赖关系
-	bean对象在创建的时候是按照bean在配置文件的顺序决定的，也可以使用depend-on标签来决定顺序,实际工作中不需要关注bean的创建顺序
-	<bean id="book" class="com.study.bean.Book" depends-on="person,address"></bean>
-	<bean id="address" class="com.study.bean.Address"></bean>
-	<bean id="person" class="com.study.bean.Person"></bean>
+bean对象创建的依赖关系
+bean对象在创建的时候是按照bean在配置文件的顺序决定的，也可以使用depend-on标签来决定顺序,实际工作中不需要关注bean的创建顺序
+<bean id="book" class="com.study.bean.Book" depends-on="person,address"></bean>
+<bean id="address" class="com.study.bean.Address"></bean>
+<bean id="person" class="com.study.bean.Person"></bean>
+	
+bean的作用域控制，是否是单例
+<!--
+bean的作用域：singleton、prototype、request、session
+默认情况下是单例的
+prototype：多实例的
+	容器启动的时候不会创建多实例bean，只有在获取对象的时候才会创建该对象
+	每次创建都是一个新的对象
+singleton：默认的单例对象
+	在容器启动完成之前就已经创建好对象
+	获取的所有对象都是同一个
+request、session：Spring 4.X之前有，不常用
+-->
+<bean id="person4" class="com.mashibing.bean.Person" scope="prototype"></bean>
+
+利用工厂模式创建bean对象
+在之前的案例中，所有bean对象的创建都是通过反射得到对应的bean实例，其实在spring中还包含另外一种创建bean实例的方式，就是通过工厂模式进行对象的创建
+在利用工厂模式创建bean实例的时候有两种方式，分别是静态工厂和实例工厂。
+	1、静态工厂：工厂本身不需要创建对象，但是可以通过静态方法调用，对象=工厂类.静态工厂方法名（）；
+		public class PersonStaticFactory {
+				public static Person getPerson(String name){
+						Person person = new Person();
+						person.setId(1);
+						person.setName(name);
+						return person;
+				}
+		}
+		<!--
+		静态工厂的使用：
+		class:指定静态工厂类
+		factory-method:指定哪个方法是工厂方法
+		-->
+		<bean id="person5" class="com.study.factory.PersonStaticFactory" factory-method="getPerson">
+			<!--constructor-arg：可以为方法指定参数-->
+			<constructor-arg value="lisi"></constructor-arg>
+		</bean>
+	2、实例工厂：工厂本身需要创建对象，工厂类 工厂对象=new 工厂类；工厂对象.get对象名（）；
+		public class PersonInstanceFactory {
+			public Person getPerson(String name){
+				Person person = new Person();
+				person.setId(1);
+				person.setName(name);
+				return person;
+			}
+		}
+		<!--实例工厂使用-->
+    <!--创建实例工厂类-->
+    <bean id="personInstanceFactory" class="com.study.factory.PersonInstanceFactory"></bean>
+    <!--
+    factory-bean:指定使用哪个工厂实例
+    factory-method:指定使用哪个工厂实例的方法
+    -->
+    <bean id="person6" class="com.study.bean.Person" factory-bean="personInstanceFactory" factory-method="getPerson">
+			<constructor-arg value="wangwu"></constructor-arg>
+    </bean>
