@@ -274,3 +274,39 @@ request、session：Spring 4.X之前有，不常用
     <bean id="person6" class="com.study.bean.Person" factory-bean="personInstanceFactory" factory-method="getPerson">
 			<constructor-arg value="wangwu"></constructor-arg>
     </bean>
+
+继承FactoryBean来创建对象
+FactoryBean是Spring规定的一个接口，当前接口的实现类，Spring都会将其作为一个工厂，但是在ioc容器启动的时候不会创建实例，只有在使用的时候才会创建对象
+/**
+ * 实现了FactoryBean接口的类是Spring中可以识别的工厂类，spring会自动调用工厂方法创建实例
+ */
+public class MyFactoryBean implements FactoryBean<Person> {
+    /**
+     * 工厂方法，返回需要创建的对象
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Person getObject() throws Exception {
+        Person person = new Person();
+        person.setName("maliu");
+        return person;
+    }
+    /**
+     * 返回创建对象的类型,spring会自动调用该方法返回对象的类型
+     * @return
+     */
+    @Override
+    public Class<?> getObjectType() {
+        return Person.class;
+    }
+    /**
+     * 创建的对象是否是单例对象
+     * @return
+     */
+    @Override
+    public boolean isSingleton() {
+        return false;
+    }
+}
+<bean id="myfactorybean" class="com.study.factory.MyFactoryBean"></bean>
