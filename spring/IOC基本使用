@@ -105,65 +105,65 @@ spring属性赋值方式
 	<bean id="person" class="com.study.bean.Person">
 		<!--给数组赋值-->
 		<property name="hobbies">
-				<array>
-						<value>book</value>
-						<value>movie</value>
-						<value>game</value>
-				</array>
+			<array>
+				<value>book</value>
+				<value>movie</value>
+				<value>game</value>
+			</array>
 		</property>
 		<!--给set赋值-->
 		<property name="sets">
-				<set>
-						<value>111</value>
-						<value>222</value>
-						<value>222</value>
-				</set>
+			<set>
+				<value>111</value>
+				<value>222</value>
+				<value>222</value>
+			</set>
 		</property>
 		<!--为list赋值-->
 		<property name="books">
-				<list>
-						<!--内部bean-->
-						<bean id="book1" class="com.study.bean.Book">
-								<property name="name" value="JVM"></property>
-								<property name="author" value="xxx"></property>
-								<property name="price" value="10"></property>
-						</bean>
-						<!--外部bean-->
-						<ref bean="book2"></ref>
-				</list>
+			<list>
+				<!--内部bean-->
+				<bean id="book1" class="com.study.bean.Book">
+					<property name="name" value="JVM"></property>
+					<property name="author" value="xxx"></property>
+					<property name="price" value="10"></property>
+				</bean>
+				<!--外部bean-->
+				<ref bean="book2"></ref>
+			</list>
 		</property>
 		<!--通过ref引用其他对象，引用外部bean-->
 		<!--<property name="address" ref="address"></property>-->
 		<!--或者-->
 		<property name="address">
-				<bean class="com.study.bean.Address">
-						<property name="province" value="beijing"></property>
-				</bean>
+			<bean class="com.study.bean.Address">
+				<property name="province" value="beijing"></property>
+			</bean>
 		</property>
 		<!--给map赋值-->
 		<property name="maps">
-				<map>
-						<entry key="a" value="aaa"></entry>
-						<entry key="address" value-ref="addr"></entry>
-						<entry key="address2">
-								<bean class="com.zx.bean.Address">
-										<property name="province" value="shenzhen"></property>
-								</bean>
-						</entry>
-						<entry>
-								<key>
-										<value>b</value>
-								</key>
-								<value>bbb</value>
-						</entry>
-				</map>
+			<map>
+				<entry key="a" value="aaa"></entry>
+				<entry key="address" value-ref="addr"></entry>
+				<entry key="address2">
+					<bean class="com.zx.bean.Address">
+						<property name="province" value="shenzhen"></property>
+					</bean>
+				</entry>
+				<entry>
+					<key>
+						<value>b</value>
+					</key>
+					<value>bbb</value>
+				</entry>
+			</map>
 		</property>
 		<!--给property赋值-->
 		<property name="properties">
-				<props>
-						<prop key="aaa">aaa</prop>
-						<prop key="bbb">222</prop>
-				</props>
+			<props>
+				<prop key="aaa">aaa</prop>
+				<prop key="bbb">222</prop>
+			</props>
 		</property>
 	</bean>
 	<bean id="address" class="com.study.bean.Address">
