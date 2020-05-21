@@ -310,3 +310,42 @@ public class MyFactoryBean implements FactoryBean<Person> {
     }
 }
 <bean id="myfactorybean" class="com.study.factory.MyFactoryBean"></bean>
+
+bean对象的初始化和销毁方法
+在创建对象的时候，我们可以根据需要调用初始化和销毁的方法
+<!--bean生命周期表示bean的创建到销毁
+如果bean是单例，容器在启动的时候会创建好，关闭的时候会销毁创建的bean
+如果bean是多例，获取的时候创建对象，销毁的时候不会有任何的调用
+-->
+<bean id="address" class="com.study.bean.Address" init-method="init" destroy-method="destory"></bean>
+
+配置bean对象初始化方法的前后处理方法
+spring中包含一个BeanPostProcessor的接口，可以在bean的初始化方法的前后调用该方法，如果配置了初始化方法的前置和后置处理器，无论是否包含初始化方法，都会进行调用
+public class MyBeanPostProcessor implements BeanPostProcessor {
+    /**
+     * 在初始化方法调用之前执行
+     * @param bean  初始化的bean对象
+     * @param beanName  xml配置文件中的bean的id属性
+     * @return
+     * @throws BeansException
+     */
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        System.out.println("postProcessBeforeInitialization:"+beanName+"调用初始化前置方法");
+        return bean;
+    }
+
+    /**
+     * 在初始化方法调用之后执行
+     * @param bean
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        System.out.println("postProcessAfterInitialization:"+beanName+"调用初始化后缀方法");
+        return bean;
+    }
+}
+<bean id="myBeanPostProcessor" class="com.study.bean.MyBeanPostProcessor"></bean>
