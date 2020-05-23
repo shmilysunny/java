@@ -232,7 +232,7 @@ singleton：默认的单例对象
 	获取的所有对象都是同一个
 request、session：Spring 4.X之前有，不常用
 -->
-<bean id="person4" class="com.mashibing.bean.Person" scope="prototype"></bean>
+<bean id="person4" class="com.study.bean.Person" scope="prototype"></bean>
 
 利用工厂模式创建bean对象
 在之前的案例中，所有bean对象的创建都是通过反射得到对应的bean实例，其实在spring中还包含另外一种创建bean实例的方式，就是通过工厂模式进行对象的创建
@@ -398,3 +398,39 @@ driverClassName=com.mysql.jdbc.Driver
         <property name="driverClassName" value="${driverClassName}"></property>
     </bean>
 </beans>
+
+spring基于xml文件的自动装配
+当一个对象中需要引用另外一个对象的时候，spring中还提供了一个非常强大的功能就是自动装配，可以按照我们指定的规则进行配置，配置的方式有以下几种：
+default/no：不自动装配
+byName：按照名字进行装配，以属性名作为id去容器中查找组件，进行赋值，如果找不到则装配null
+byType：按照类型进行装配,以属性的类型作为查找依据去容器中找到这个组件，如果有多个类型相同的bean对象，那么会报异常，如果找不到则装配null
+constructor：按照构造器进行装配，先按照有参构造器参数的类型进行装配，没有就直接装配null；如果按照类型找到了多个，那么就使用参数名作为id继续匹配，找到就装配，找不到就装配null
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="address" class="com.study.bean.Address">
+        <property name="province" value="河北"></property>
+        <property name="city" value="邯郸"></property>
+        <property name="town" value="武安"></property>
+    </bean>
+    <bean id="person" class="com.study.bean.Person" autowire="byName"></bean>
+    <bean id="person2" class="com.study.bean.Person" autowire="byType"></bean>
+    <bean id="person3" class="com.study.bean.Person" autowire="constructor"></bean>
+</beans>
+
+SpEL的使用
+SpEL:Spring Expression Language,spring的表达式语言，支持运行时查询操作对象
+使用#{...}作为语法规则，所有的大括号中的字符都认为是SpEL.
+<bean id="person4" class="com.study.bean.Person">
+		<!--支持任何运算符-->
+		<property name="age" value="#{12*2}"></property>
+		<!--可以引用其他bean的某个属性值-->
+		<property name="name" value="#{address.province}"></property>
+		<!--引用其他bean-->
+		<property name="address" value="#{address}"></property>
+		<!--调用静态方法-->
+		<property name="hobbies" value="#{T(java.util.UUID).randomUUID().toString().substring(0,4)}"></property>
+		<!--调用非静态方法-->
+		<property name="gender" value="#{address.getCity()}"></property>
+</bean>
