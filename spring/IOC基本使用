@@ -238,42 +238,42 @@ request、session：Spring 4.X之前有，不常用
 在之前的案例中，所有bean对象的创建都是通过反射得到对应的bean实例，其实在spring中还包含另外一种创建bean实例的方式，就是通过工厂模式进行对象的创建
 在利用工厂模式创建bean实例的时候有两种方式，分别是静态工厂和实例工厂。
 	1、静态工厂：工厂本身不需要创建对象，但是可以通过静态方法调用，对象=工厂类.静态工厂方法名（）；
-		public class PersonStaticFactory {
-				public static Person getPerson(String name){
-						Person person = new Person();
-						person.setId(1);
-						person.setName(name);
-						return person;
-				}
-		}
-		<!--
-		静态工厂的使用：
-		class:指定静态工厂类
-		factory-method:指定哪个方法是工厂方法
-		-->
-		<bean id="person5" class="com.study.factory.PersonStaticFactory" factory-method="getPerson">
-			<!--constructor-arg：可以为方法指定参数-->
-			<constructor-arg value="lisi"></constructor-arg>
-		</bean>
-	2、实例工厂：工厂本身需要创建对象，工厂类 工厂对象=new 工厂类；工厂对象.get对象名（）；
-		public class PersonInstanceFactory {
-			public Person getPerson(String name){
+	public class PersonStaticFactory {
+		public static Person getPerson(String name){
 				Person person = new Person();
 				person.setId(1);
 				person.setName(name);
 				return person;
-			}
 		}
-		<!--实例工厂使用-->
-    <!--创建实例工厂类-->
-    <bean id="personInstanceFactory" class="com.study.factory.PersonInstanceFactory"></bean>
-    <!--
-    factory-bean:指定使用哪个工厂实例
-    factory-method:指定使用哪个工厂实例的方法
-    -->
-    <bean id="person6" class="com.study.bean.Person" factory-bean="personInstanceFactory" factory-method="getPerson">
-			<constructor-arg value="wangwu"></constructor-arg>
-    </bean>
+	}
+	<!--
+	静态工厂的使用：
+	class:指定静态工厂类
+	factory-method:指定哪个方法是工厂方法
+	-->
+	<bean id="person5" class="com.study.factory.PersonStaticFactory" factory-method="getPerson">
+		<!--constructor-arg：可以为方法指定参数-->
+		<constructor-arg value="lisi"></constructor-arg>
+	</bean>
+	2、实例工厂：工厂本身需要创建对象，工厂类 工厂对象=new 工厂类；工厂对象.get对象名（）；
+	public class PersonInstanceFactory {
+		public Person getPerson(String name){
+			Person person = new Person();
+			person.setId(1);
+			person.setName(name);
+			return person;
+		}
+	}
+	<!--实例工厂使用-->
+	<!--创建实例工厂类-->
+	<bean id="personInstanceFactory" class="com.study.factory.PersonInstanceFactory"></bean>
+	<!--
+	factory-bean:指定使用哪个工厂实例
+	factory-method:指定使用哪个工厂实例的方法
+	-->
+	<bean id="person6" class="com.study.bean.Person" factory-bean="personInstanceFactory" factory-method="getPerson">
+		<constructor-arg value="wangwu"></constructor-arg>
+	</bean>
 
 继承FactoryBean来创建对象
 FactoryBean是Spring规定的一个接口，当前接口的实现类，Spring都会将其作为一个工厂，但是在ioc容器启动的时候不会创建实例，只有在使用的时候才会创建对象
@@ -349,3 +349,52 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
     }
 }
 <bean id="myBeanPostProcessor" class="com.study.bean.MyBeanPostProcessor"></bean>
+
+spring创建第三方bean对象
+在Spring中，很多对象都是单实例的，在日常的开发中，我们经常需要使用某些外部的单实例对象，例如数据库连接池
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="username" value="root"></property>
+        <property name="password" value="123456"></property>
+        <property name="url" value="jdbc:mysql://localhost:3306/demo"></property>
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+    </bean>
+</beans>
+public class MyTest {
+    public static void main(String[] args) throws SQLException {
+        ApplicationContext context = new ClassPathXmlApplicationContext("ioc3.xml");
+        DruidDataSource dataSource = context.getBean("dataSource", DruidDataSource.class);
+        System.out.println(dataSource);
+        System.out.println(dataSource.getConnection());
+    }
+}
+
+spring引用外部配置文件
+在resource中添加db.properties
+username=root
+password=123456
+url=jdbc:mysql://localhost:3306/demo
+driverClassName=com.mysql.jdbc.Driver
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+	<!--加载外部配置文件
+		在加载外部依赖文件的时候需要context命名空间
+	-->
+    <context:property-placeholder location="classpath:dbconfig.properties"/>
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="username" value="${username}"></property>
+        <property name="password" value="${password}"></property>
+        <property name="url" value="${url}"></property>
+        <property name="driverClassName" value="${driverClassName}"></property>
+    </bean>
+</beans>
