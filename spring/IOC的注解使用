@@ -173,4 +173,31 @@ public class PersonDao {
       }
   }
   
-  @AutoWired可以在方法上进行定义
+@AutoWired可以在方法上进行定义
+/**
+ * 当方法上有@AutoWired注解时：
+ *  1、此方法在bean创建的时候会自动调用
+ *  2、这个方法的每一个参数都会自动注入值
+ * @param personDao
+ */
+@Autowired
+public void test(PersonDao personDao){
+    System.out.println("此方法被调用:"+personDao);
+}
+
+/**
+ * @Qualifier注解也可以作用在属性上，用来被当作id去匹配容器中的对象，如果没有
+ * 此注解，那么直接按照类型进行匹配
+ * @param personService
+ */
+@Autowired
+public void test2(@Qualifier("personServiceExt") PersonService personService){
+    System.out.println("此方法被调用："+personService);
+}
+
+自动装配的注解@AutoWired，@Resource
+在使用自动装配的时候，出了可以使用@AutoWired注解之外，还可以使用@Resource注解，区别如下
+1、@AutoWired:是spring中提供的注解，@Resource:是jdk中定义的注解，依靠的是java的标准
+2、@AutoWired默认是按照类型进行装配，类型没有按照名字进行装配，默认情况下要求依赖的对象必须存在，
+   @Resource默认是按照名字进行匹配的，名字没有按照类型进行匹配，同时可以指定name属性。
+3、@AutoWired只适合spring框架，而@Resource扩展性更好
