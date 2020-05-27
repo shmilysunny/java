@@ -201,3 +201,127 @@ public void test2(@Qualifier("personServiceExt") PersonService personService){
 2、@AutoWired默认是按照类型进行装配，类型没有按照名字进行装配，默认情况下要求依赖的对象必须存在，
    @Resource默认是按照名字进行匹配的，名字没有按照类型进行匹配，同时可以指定name属性。
 3、@AutoWired只适合spring框架，而@Resource扩展性更好
+
+泛型依赖注入
+首先我们需要先写一个基本的案例：
+Student.java
+package com.study.bean;
+public class Student {
+}
+
+Teacher.java
+package com.study.bean;
+public class Teacher {
+}
+
+BaseDao.java
+package com.study.dao;
+import org.springframework.stereotype.Repository;
+@Repository
+public abstract class BaseDao<T> {
+    public abstract void save();
+}
+
+StudentDao.java
+package com.study.dao;
+import com.study.bean.Student;
+import org.springframework.stereotype.Repository;
+@Repository
+public class StudentDao extends BaseDao<Student>{
+    public void save() {
+        System.out.println("保存学生");
+    }
+}
+
+TeacherDao.java
+package com.study.dao;
+import com.study.bean.Teacher;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class TeacherDao extends BaseDao<Teacher> {
+    public void save() {
+        System.out.println("保存老师");
+    }
+}
+
+StudentService.java
+package com.study.service;
+import com.study.dao.StudentDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+@Service
+public class StudentService {
+    @Autowired
+    private StudentDao studentDao;
+    public void save(){
+        studentDao.save();
+    }
+}
+
+TeacherService.java
+package com.study.service;
+import com.study.dao.TeacherDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+@Service
+public class TeacherService {
+    @Autowired
+    private TeacherDao teacherDao;
+    public void save(){
+        teacherDao.save();
+    }
+}
+
+MyTest.java
+import com.study.service.StudentService;
+import com.study.service.TeacherService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import javax.sql.DataSource;
+import java.sql.SQLException;
+public class MyTest {
+    public static void main(String[] args) throws SQLException {
+        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+        StudentService studentService = context.getBean("studentService",StudentService.class);
+        studentService.save();
+
+        TeacherService teacherService = context.getBean("teacherService",TeacherService.class);
+        teacherService.save();
+    }
+}
+
+上述代码是我们之前的可以完成的功能，但是可以思考，Service层的代码是否能够改写：
+BaseService.java
+package com.study.service;
+import com.study.dao.BaseDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+public class BaseService<T> {
+    @Autowired
+    BaseDao<T> baseDao;
+    public void save(){
+        System.out.println("自动注入的对象："+baseDao);
+        baseDao.save();
+    }
+}
+
+StudentService.java
+package com.study.service;
+import com.study.bean.Student;
+import com.study.dao.StudentDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+@Service
+public class StudentService extends BaseService<Student> {
+}
+
+TeacherService.java
+package com.study.service;
+import com.study.bean.Teacher;
+import com.study.dao.TeacherDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+@Service
+public class TeacherService extends BaseService<Teacher>{
+}
