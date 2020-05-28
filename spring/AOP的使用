@@ -1,0 +1,178 @@
+AOP：Aspect Oriented Programming 面向切面编程
+OOP：Object Oriented Programming 面向对象编程
+面向切面编程：基于OOP基础之上新的编程思想，OOP面向的主要对象是类，而AOP面向的主要对象是切面，在处理日志、安全管理、事务管理等方面有非常重要的作用。AOP是Spring中重要的核心点，虽然IOC容器没有依赖AOP，但是AOP提供了非常强大的功能，用来对IOC做补充。通俗点说的话就是在程序运行期间，将某段代码动态切入到指定方法的指定位置进行运行的这种编程方式。
+
+JDK本身的动态代理必须需要接口和实现类，CGLIB可以避免这个缺陷，不必定义接口
+public class CalculatorProxy {
+    public static Calculator getProxy(final Calculator calculator) {
+        Object o = Proxy.newProxyInstance(calculator.getClass().getClassLoader(), calculator.getClass().getInterfaces(), new InvocationHandler() {
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                Object result = null;
+                LogUtil.start(method, args);
+                try {
+                    result = method.invoke(calculator, args);
+                    LogUtil.stop(result);
+                } catch (Exception e) {
+                    LogUtil.logException(method,e);
+                } finally {
+                    LogUtil.end(method);
+                }
+                return result;
+            }
+        });
+        return (Calculator) o;
+    }
+}
+
+AOP的核心概念及术语
+    切面（Aspect）: 指关注点模块化，这个关注点可能会横切多个对象。事务管理是企业级Java应用中有关横切关注点的例子。 在Spring AOP中，切面可以使用通用类基于模式的方式（schema-based approach）或者在普通类中以@Aspect注解（@AspectJ 注解方式）来实现。
+    连接点（Join point）: 在程序执行过程中某个特定的点，例如某个方法调用的时间点或者处理异常的时间点。在Spring AOP中，一个连接点总是代表一个方法的执行。
+    通知（Advice）: 在切面的某个特定的连接点上执行的动作。通知有多种类型，包括“around”, “before” and “after”等等。通知的类型将在后面的章节进行讨论。 许多AOP框架，包括Spring在内，都是以拦截器做通知模型的，并维护着一个以连接点为中心的拦截器链。
+    切点（Pointcut）: 匹配连接点的断言。通知和切点表达式相关联，并在满足这个切点的连接点上运行（例如，当执行某个特定名称的方法时）。切点表达式如何和连接点匹配是AOP的核心：Spring默认使用AspectJ切点语义。
+    引入（Introduction）: 声明额外的方法或者某个类型的字段。Spring允许引入新的接口（以及一个对应的实现）到任何被通知的对象上。例如，可以使用引入来使bean实现 IsModified接口， 以便简化缓存机制（在AspectJ社区，引入也被称为内部类型声明（inter））。
+    目标对象（Target object）: 被一个或者多个切面所通知的对象。也被称作被通知（advised）对象。既然Spring AOP是通过运行时代理实现的，那么这个对象永远是一个被代理（proxied）的对象。
+    AOP代理（AOP proxy）:AOP框架创建的对象，用来实现切面契约（aspect contract）（包括通知方法执行等功能）。在Spring中，AOP代理可以是JDK动态代理或CGLIB代理。
+    织入（Weaving）: 把切面连接到其它的应用程序类型或者对象上，并创建一个被被通知的对象的过程。这个过程可以在编译时（例如使用AspectJ编译器）、类加载时或运行时中完成。 Spring和其他纯Java AOP框架一样，是在运行时完成织入的。
+
+AOP的通知类型
+    前置通知（Before advice）: 在连接点之前运行但无法阻止执行流程进入连接点的通知（除非它引发异常）。
+    后置返回通知（After returning advice）:在连接点正常完成后执行的通知（例如，当方法没有抛出任何异常并正常返回时）。
+    后置异常通知（After throwing advice）: 在方法抛出异常退出时执行的通知。
+    后置通知（总会执行）（After (finally) advice）: 当连接点退出的时候执行的通知（无论是正常返回还是异常退出）。
+    环绕通知（Around Advice）:环绕连接点的通知，例如方法调用。这是最强大的一种通知类型，。环绕通知可以在方法调用前后完成自定义的行为。它可以选择是否继续执行连接点或直接返回自定义的返回值又或抛出异常将执行结束。
+
+AOP的应用场景
+    日志管理
+    权限认证
+    安全检查
+    事务控制
+    
+Spring AOP的简单配置
+添加pom依赖
+<!-- https://mvnrepository.com/artifact/cglib/cglib -->
+<dependency>
+    <groupId>cglib</groupId>
+    <artifactId>cglib</artifactId>
+    <version>3.3.0</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.5</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/aopalliance/aopalliance -->
+<dependency>
+    <groupId>aopalliance</groupId>
+    <artifactId>aopalliance</artifactId>
+    <version>1.0</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-aspects -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-aspects</artifactId>
+    <version>5.2.3.RELEASE</version>
+</dependency>
+编写配置
+将目标类和切面类加入到IOC容器中，在对应的类上添加组件注解
+    给LogUtil添加@Component注解
+    给MyCalculator添加@Service注解
+    添加自动扫描的配置
+    <context:component-scan base-package="com.study"></context:component-scan>
+设置程序中的切面类
+    在LogUtil.java中添加@Aspect注解
+设置切面类中的方法是什么时候在哪里执行
+@Component
+@Aspect
+public class LogUtil {
+    /*
+    设置下面方法在什么时候运行
+        @Before:在目标方法之前运行：前置通知
+        @After:在目标方法之后运行：后置通知
+        @AfterReturning:在目标方法正常返回之后：返回通知
+        @AfterThrowing:在目标方法抛出异常后开始运行：异常通知
+        @Around:环绕：环绕通知
+
+        当编写完注解之后还需要设置在哪些方法上执行，使用表达式
+        execution(访问修饰符  返回值类型 方法全称)
+     */
+    @Before("execution( public int com.study.inter.MyCalculator.*(int,int))")
+    public static void start(){
+        System.out.println("方法开始执行，参数是：");
+    }
+    @AfterReturning("execution( public int com.study.inter.MyCalculator.*(int,int))")
+    public static void stop(){
+        System.out.println("方法执行完成，结果是：");
+
+    }
+    @AfterThrowing("execution( public int com.study.inter.MyCalculator.*(int,int))")
+    public static void logException(){
+        System.out.println("方法出现异常：");
+    }
+    @After("execution( public int com.study.inter.MyCalculator.*(int,int))")
+    public static void end(){
+        System.out.println("方法执行结束了......");
+    }
+}
+开启基于注解的aop的功能
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd
+">
+    <context:component-scan base-package="com.mashibing"></context:component-scan>
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+</beans>
+测试
+public class MyTest {
+    public static void main(String[] args){
+        ApplicationContext context = new ClassPathXmlApplicationContext("aop.xml");
+        Calculator bean = context.getBean(Calculator.class);
+        bean.add(1,1);
+    }
+}
+spring AOP的动态代理方式是jdk自带的方式，容器中保存的组件是代理对象com.sun.proxy.$Proxy对象
+
+通过cglib来创建代理对象
+@Service
+public class MyCalculator {
+    public int add(int i, int j) {
+        int result = i + j;
+        return result;
+    }
+
+    public int sub(int i, int j) {
+        int result = i - j;
+        return result;
+    }
+
+    public int mult(int i, int j) {
+        int result = i * j;
+        return result;
+    }
+
+    public int div(int i, int j) {
+        int result = i / j;
+        return result;
+    }
+}
+测试
+public class MyTest {
+    public static void main(String[] args){
+        ApplicationContext context = new ClassPathXmlApplicationContext("aop.xml");
+        MyCalculator bean = context.getBean(MyCalculator.class);
+        bean.add(1,1);
+        System.out.println(bean);
+        System.out.println(bean.getClass());
+    }
+}
+可以通过cglib的方式来创建代理对象，此时不需要实现任何接口，代理对象是class com.mashibing.inter.MyCalculator$$EnhancerBySpringCGLIB$$1f93b605类型
+
+综上所述：在spring容器中，如果有接口，那么会使用jdk自带的动态代理，如果没有接口，那么会使用cglib的动态代理。
