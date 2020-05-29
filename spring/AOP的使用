@@ -127,7 +127,7 @@ public class LogUtil {
        http://www.springframework.org/schema/aop
        https://www.springframework.org/schema/aop/spring-aop.xsd
 ">
-    <context:component-scan base-package="com.mashibing"></context:component-scan>
+    <context:component-scan base-package="com.study"></context:component-scan>
     <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 </beans>
 测试
@@ -173,6 +173,38 @@ public class MyTest {
         System.out.println(bean.getClass());
     }
 }
-可以通过cglib的方式来创建代理对象，此时不需要实现任何接口，代理对象是class com.mashibing.inter.MyCalculator$$EnhancerBySpringCGLIB$$1f93b605类型
+可以通过cglib的方式来创建代理对象，此时不需要实现任何接口，代理对象是class com.study.inter.MyCalculator$$EnhancerBySpringCGLIB$$1f93b605类型
 
 综上所述：在spring容器中，如果有接口，那么会使用jdk自带的动态代理，如果没有接口，那么会使用cglib的动态代理。
+
+注意：
+1、切入点表达式
+  在使用表达式的时候，除了之前的写法之外，还可以使用通配符的方式：
+  *：
+  1、匹配一个或者多个字符
+  execution( public int com.study.inter.My*alculator.*(int,int))
+  2、匹配任意一个参数，
+  execution( public int com.study.inter.MyCalculator.*(int,*))
+  3、只能匹配一层路径，如果项目路径下有多层目录，那么*只能匹配一层路径
+  4、权限位置不能使用*，如果想表示全部权限，那么不写即可
+  execution( * com.study.inter.MyCalculator.*(int,*))
+  ..：
+  1、匹配多个参数，任意类型参数
+  execution( * com.study.inter.MyCalculator.*(..))
+  2、匹配任意多层路径
+  execution( * com.study..MyCalculator.*(..))
+  在写表达式的时候，可以有N多种写法，但是有一种最偷懒和最精确的方式：
+  最偷懒的方式：execution(* *(..)) 或者 execution(* *.*(..))
+  最精确的方式：execution( public int com.study.inter.MyCalculator.add(int,int))
+  除此之外，在表达式中还支持 &&、||、！的方式
+  &&：两个表达式同时
+  execution( public int com.study.inter.MyCalculator.*(..)) && execution(* *.*(int,int) )
+  ||：任意满足一个表达式即可
+  execution( public int com.study.inter.MyCalculator.*(..)) && execution(* *.*(int,int) )
+  ！：只要不是这个位置都可以进行切入
+  &&：两个表达式同时
+  execution( public int com.study.inter.MyCalculator.*(..))
+2、通知方法的执行顺序
+  在之前的代码中大家一直对通知的执行顺序有疑问，其实执行的结果并没有错，大家需要注意：
+  1、正常执行：@Before--->@After--->@AfterReturning
+  2、异常执行：@Before--->@After--->@AfterThrowing
