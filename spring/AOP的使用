@@ -205,6 +205,133 @@ public class MyTest {
   &&：两个表达式同时
   execution( public int com.study.inter.MyCalculator.*(..))
 2、通知方法的执行顺序
-  在之前的代码中大家一直对通知的执行顺序有疑问，其实执行的结果并没有错，大家需要注意：
   1、正常执行：@Before--->@After--->@AfterReturning
   2、异常执行：@Before--->@After--->@AfterThrowing
+3、获取方法的详细信息
+  想要获取的话只需要添加JoinPoint参数即可。
+  @Component
+  @Aspect
+  public class LogUtil {
+        @Before("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+        public static void start(JoinPoint joinPoint){
+            Object[] args = joinPoint.getArgs();
+            String name = joinPoint.getSignature().getName();
+            System.out.println(name+"方法开始执行，参数是："+ Arrays.asList(args));
+        }
+
+        @AfterReturning("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+        public static void stop(JoinPoint joinPoint){
+            String name = joinPoint.getSignature().getName();
+            System.out.println(name+"方法执行完成，结果是：");
+
+        }
+
+        @AfterThrowing("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+        public static void logException(JoinPoint joinPoint){
+            String name = joinPoint.getSignature().getName();
+            System.out.println(name+"方法出现异常：");
+        }
+
+        @After("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+        public static void end(JoinPoint joinPoint){
+            String name = joinPoint.getSignature().getName();
+            System.out.println(name+"方法执行结束了......");
+        }
+   }
+4、获取方法返回值
+@AfterReturning(value = "execution( public int com.mashibing.inter.MyCalculator.*(int,int))",returning = "result")
+public static void stop(JoinPoint joinPoint,Object result){
+    String name = joinPoint.getSignature().getName();
+    System.out.println(name+"方法执行完成，结果是："+result);
+
+}
+5、获取异常信息
+@AfterThrowing(value = "execution( public int com.mashibing.inter.MyCalculator.*(int,int))",throwing = "exception")
+public static void logException(JoinPoint joinPoint,Exception exception){
+    String name = joinPoint.getSignature().getName();
+    System.out.println(name+"方法出现异常："+exception);
+}
+6、spring对通过方法的要求
+spring对于通知方法的要求并不是很高，你可以任意改变方法的返回值和方法的访问修饰符，但是唯一不能修改的就是方法的参数，会出现参数绑定的错误，原因在于通知方法是spring利用反射调用的，每次方法调用得确定这个方法的参数的值
+@After("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+private int end(JoinPoint joinPoint,String aa){
+//        System.out.println(method.getName()+"方法执行结束了......");
+    String name = joinPoint.getSignature().getName();
+    System.out.println(name+"方法执行结束了......");
+    return 0;
+}
+7、表达式的抽取
+实际使用过程中，多个方法的表达式是一致的话，那么可以考虑将切入点表达式抽取出来：
+a、随便生命一个没有实现的返回void的空方法
+b、给方法上标注@Potintcut注解
+@Component
+@Aspect
+public class LogUtil {
+    
+    @Pointcut("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+    public void myPoint(){}
+    
+    @Before("myPoint()")
+    public static void start(JoinPoint joinPoint){
+        Object[] args = joinPoint.getArgs();
+        String name = joinPoint.getSignature().getName();
+        System.out.println(name+"方法开始执行，参数是："+ Arrays.asList(args));
+    }
+
+    @AfterReturning(value = "myPoint()",returning = "result")
+    public static void stop(JoinPoint joinPoint,Object result){
+        String name = joinPoint.getSignature().getName();
+        System.out.println(name+"方法执行完成，结果是："+result);
+
+    }
+
+    @AfterThrowing(value = "myPoint()",throwing = "exception")
+    public static void logException(JoinPoint joinPoint,Exception exception){
+        String name = joinPoint.getSignature().getName();
+        System.out.println(name+"方法出现异常："+exception.getMessage());
+    }
+
+    @After("myPoint()")
+    private int end(JoinPoint joinPoint){
+        String name = joinPoint.getSignature().getName();
+        System.out.println(name+"方法执行结束了......");
+        return 0;
+    }
+}
+8、环绕通知的使用
+@Component
+@Aspect
+public class LogUtil {
+    @Pointcut("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+    public void myPoint(){}
+    
+    /**
+     * 环绕通知是spring中功能最强大的通知
+     * @param proceedingJoinPoint
+     * @return
+     */
+    @Around("myPoint()")
+    public Object myAround(ProceedingJoinPoint proceedingJoinPoint){
+        Object[] args = proceedingJoinPoint.getArgs();
+        String name = proceedingJoinPoint.getSignature().getName();
+        Object proceed = null;
+        try {
+            System.out.println("环绕前置通知:"+name+"方法开始，参数是"+Arrays.asList(args));
+            //利用反射调用目标方法，就是method.invoke()
+            proceed = proceedingJoinPoint.proceed(args);
+            System.out.println("环绕返回通知:"+name+"方法返回，返回值是"+proceed);
+        } catch (Throwable e) {
+            System.out.println("环绕异常通知"+name+"方法出现异常，异常信息是："+e);
+        }finally {
+            System.out.println("环绕后置通知"+name+"方法结束");
+        }
+        return proceed;
+    }
+}
+总结：环绕通知的执行顺序是优于普通通知的，具体的执行顺序如下：
+正常情况下
+环绕前置-->普通前置(before)-->目标方法执行-->环绕正常结束-->环绕后置-->普通后置(after)-->普通返回(afterreturning)
+异常情况下(异常解决)
+环绕前置-->普通前置(before)-->目标方法执行-->环绕异常结束-->环绕后置-->普通后置(after)-->普通返回(afterreturning)
+异常情况下(异常未解决)
+环绕前置-->普通前置(before)-->目标方法执行-->环绕异常结束-->环绕后置-->普通后置(after)-->普通返回(afterthrowing)
