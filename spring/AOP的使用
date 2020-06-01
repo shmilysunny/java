@@ -376,3 +376,75 @@ public class LogUtil {
         </aop:aspect>
     </aop:config>
 </beans>
+
+声明式事务的简单配置
+在事务控制方面，主要有两个分类：
+编程式事务：在代码中直接加入处理事务的逻辑，可能需要在代码中显式调用beginTransaction()、commit()、rollback()等事务管理相关的方法
+声明式事务：在方法的外部添加注解或者直接在配置文件中定义，将事务管理代码从业务方法中分离出来，以声明的方式来实现事务管理。spring的AOP恰好可以完成此功能：事务管理代码的固定模式作为一种横切关注点，通过AOP方法模块化，进而实现声明式事务。
+Spring从不同的事务管理API中抽象出了一整套事务管理机制，让事务管理代码从特定的事务技术中独立出来。开发人员通过配置的方式进行事务管理，而不必了解其底层是如何实现的。
+ Spring的核心事务管理抽象是PlatformTransactionManager。它为事务管理封装了一组独立于技术的方法。无论使用Spring的哪种事务管理策略(编程式或声明式)，事务管理器都是必须的。
+ 事务管理器可以以普通的bean的形式声明在Spring IOC容器中。
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/tx
+       https://www.springframework.org/schema/tx/spring-tx.xsd
+">
+    <context:component-scan base-package="com.study"></context:component-scan>
+    <context:property-placeholder location="classpath:dbconfig.properties"></context:property-placeholder>
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="driverClassName" value="${jdbc.driverClassName}"></property>
+    </bean>
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <constructor-arg name="dataSource" ref="dataSource"></constructor-arg>
+    </bean>
+    <!--事务控制-->
+    <!--配置事务管理器的bean-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--开启基于注解的事务控制模式，依赖tx名称空间-->
+    <tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
+</beans>
+
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional
+    public void checkout(String username,int id){
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+}
+
+事务配置的属性
+isolation：设置事务的隔离级别
+propagation：事务的传播行为
+noRollbackFor：那些异常事务可以不回滚
+noRollbackForClassName：填写的参数是全类名
+rollbackFor：哪些异常事务需要回滚
+rollbackForClassName：填写的参数是全类名
+readOnly：设置事务是否为只读事务
+timeout：事务超出指定执行时长后自动终止并回滚,单位是秒
