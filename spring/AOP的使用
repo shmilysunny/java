@@ -212,48 +212,48 @@ public class MyTest {
   @Component
   @Aspect
   public class LogUtil {
-        @Before("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+        @Before("execution( public int com.study.inter.MyCalculator.*(int,int))")
         public static void start(JoinPoint joinPoint){
             Object[] args = joinPoint.getArgs();
             String name = joinPoint.getSignature().getName();
             System.out.println(name+"方法开始执行，参数是："+ Arrays.asList(args));
         }
 
-        @AfterReturning("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+        @AfterReturning("execution( public int com.study.inter.MyCalculator.*(int,int))")
         public static void stop(JoinPoint joinPoint){
             String name = joinPoint.getSignature().getName();
             System.out.println(name+"方法执行完成，结果是：");
 
         }
 
-        @AfterThrowing("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+        @AfterThrowing("execution( public int com.study.inter.MyCalculator.*(int,int))")
         public static void logException(JoinPoint joinPoint){
             String name = joinPoint.getSignature().getName();
             System.out.println(name+"方法出现异常：");
         }
 
-        @After("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+        @After("execution( public int com.study.inter.MyCalculator.*(int,int))")
         public static void end(JoinPoint joinPoint){
             String name = joinPoint.getSignature().getName();
             System.out.println(name+"方法执行结束了......");
         }
    }
 4、获取方法返回值
-@AfterReturning(value = "execution( public int com.mashibing.inter.MyCalculator.*(int,int))",returning = "result")
+@AfterReturning(value = "execution( public int com.study.inter.MyCalculator.*(int,int))",returning = "result")
 public static void stop(JoinPoint joinPoint,Object result){
     String name = joinPoint.getSignature().getName();
     System.out.println(name+"方法执行完成，结果是："+result);
 
 }
 5、获取异常信息
-@AfterThrowing(value = "execution( public int com.mashibing.inter.MyCalculator.*(int,int))",throwing = "exception")
+@AfterThrowing(value = "execution( public int com.study.inter.MyCalculator.*(int,int))",throwing = "exception")
 public static void logException(JoinPoint joinPoint,Exception exception){
     String name = joinPoint.getSignature().getName();
     System.out.println(name+"方法出现异常："+exception);
 }
 6、spring对通过方法的要求
 spring对于通知方法的要求并不是很高，你可以任意改变方法的返回值和方法的访问修饰符，但是唯一不能修改的就是方法的参数，会出现参数绑定的错误，原因在于通知方法是spring利用反射调用的，每次方法调用得确定这个方法的参数的值
-@After("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+@After("execution( public int com.study.inter.MyCalculator.*(int,int))")
 private int end(JoinPoint joinPoint,String aa){
 //        System.out.println(method.getName()+"方法执行结束了......");
     String name = joinPoint.getSignature().getName();
@@ -268,7 +268,7 @@ b、给方法上标注@Potintcut注解
 @Aspect
 public class LogUtil {
     
-    @Pointcut("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+    @Pointcut("execution( public int com.study.inter.MyCalculator.*(int,int))")
     public void myPoint(){}
     
     @Before("myPoint()")
@@ -302,7 +302,7 @@ public class LogUtil {
 @Component
 @Aspect
 public class LogUtil {
-    @Pointcut("execution( public int com.mashibing.inter.MyCalculator.*(int,int))")
+    @Pointcut("execution( public int com.study.inter.MyCalculator.*(int,int))")
     public void myPoint(){}
     
     /**
@@ -337,3 +337,42 @@ public class LogUtil {
 环绕前置-->普通前置(before)-->目标方法执行-->环绕异常结束-->环绕后置-->普通后置(after)-->普通异常(afterthrowing)
 9、多切面运行的顺序
 在spring中，默认是按照切面名称的字典顺序进行执行的，但是如果想自己改变具体的执行顺序的话，可以使用@Order注解来解决，数值越小，优先级越高
+
+基于配置的AOP配置
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd
+">
+
+    <context:component-scan base-package="com.study"></context:component-scan>
+
+    <bean id="logUtil" class="com.study.util.LogUtil2"></bean>
+    <bean id="securityAspect" class="com.study.util.SecurityAspect"></bean>
+    <bean id="myCalculator" class="com.study.inter.MyCalculator"></bean>
+    <aop:config>
+        <aop:pointcut id="globalPoint" expression="execution(public int com.study.inter.MyCalculator.*(int,int))"/>
+        <aop:aspect ref="logUtil">
+            <aop:pointcut id="mypoint" expression="execution(public int com.study.inter.MyCalculator.*(int,int))"/>
+            <aop:before method="start" pointcut-ref="mypoint"></aop:before>
+            <aop:after method="end" pointcut-ref="mypoint"></aop:after>
+            <aop:after-returning method="stop" pointcut-ref="mypoint" returning="result"></aop:after-returning>
+            <aop:after-throwing method="logException" pointcut-ref="mypoint" throwing="exception"></aop:after-throwing>
+            <aop:around method="myAround" pointcut-ref="mypoint"></aop:around>
+        </aop:aspect>
+        <aop:aspect ref="securityAspect">
+            <aop:before method="start" pointcut-ref="globalPoint"></aop:before>
+            <aop:after method="end" pointcut-ref="globalPoint"></aop:after>
+            <aop:after-returning method="stop" pointcut-ref="globalPoint" returning="result"></aop:after-returning>
+            <aop:after-throwing method="logException" pointcut-ref="globalPoint" throwing="exception"></aop:after-throwing>
+            <aop:around method="myAround" pointcut-ref="mypoint"></aop:around>
+        </aop:aspect>
+    </aop:config>
+</beans>
