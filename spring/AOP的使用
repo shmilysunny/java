@@ -448,3 +448,277 @@ rollbackFor：哪些异常事务需要回滚
 rollbackForClassName：填写的参数是全类名
 readOnly：设置事务是否为只读事务
 timeout：事务超出指定执行时长后自动终止并回滚,单位是秒
+
+测试超时属
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(timeout = 3)
+    public void checkout(String username,int id){
+
+        bookDao.updateStock(id);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+}
+设置哪些异常不回滚
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(timeout = 3,noRollbackFor = {ArithmeticException.class,NullPointerException.class})
+    public void checkout(String username,int id){
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+        int i = 1/0;
+    }
+    
+        @Transactional(timeout = 3,noRollbackForClassName = {"java.lang.ArithmeticException"})
+    public void checkout(String username,int id){
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+        int i = 1/0;
+    }
+}
+设置事务只读
+如果你一次执行单条查询语句，则没有必要启用事务支持，数据库默认支持SQL执行期间的读一致性；
+如果你一次执行多条查询语句，例如统计查询，报表查询，在这种场景下，多条查询SQL必须保证整体的读一致性，否则，在前条SQL查询之后，后条SQL查询之前，数据被其他用户改变，则该次整体的统计查询将会出现读数据不一致的状态，此时，应该启用事务支持。
+对于只读查询，可以指定事务类型为readonly，即只读事务。由于只读事务不存在数据的修改，因此数据库将会为只读事务提供一些优化手段
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(timeout = 3,readOnly = true)
+    public void checkout(String username,int id){
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+}
+事务的传播特性
+事务的传播特性指的是当一个事务方法被另一个事务方法调用时，这个事务方法应该如何进行
+如果设置的传播特性是Required，那么所有的事务都会统一成一个事务，一旦发生错误，所有的数据都要进行回滚
+例：
+BookService.java
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void checkout(String username,int id) {
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+        int i = 1/0;
+   }
+}
+MulService.java
+@Service
+public class MulService {
+
+    @Autowired
+    private BookService bookService;
+
+    @Transactional
+    public void mulTx(){
+        bookService.checkout("zhangsan",1);
+        bookService.updatePrice(1,1000);
+    }
+}
+MyTest.java
+public class MyTest {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("jdbcTemplate.xml");
+        MulService mulService = context.getBean("mulService", MulService.class);
+        mulService.mulTx();
+    }
+}
+通过修改checkout方法的传播特性为Required_new,发现价格进行了回滚，而其他的数据没有进行回滚
+例
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void checkout(String username,int id) {
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+        int i = 1/0;
+    }
+}
+将bookservice方法的传播行为为Required，并且将报错设置在MulService中，发现会都进行回滚
+例：
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void checkout(String username,int id) {
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+    }
+}
+@Service
+public class MulService {
+
+    @Autowired
+    private BookService bookService;
+
+    @Transactional
+    public void mulTx(){
+        bookService.checkout("zhangsan",1);
+        bookService.updatePrice(1,1000);
+        int i = 1/0;
+    }
+}
+将bookservice方法的传播行为为Requires_new，并且将报错设置在MulService中，发现都不会进行回滚
+例：
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void checkout(String username,int id) {
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+    }
+}
+@Service
+public class MulService {
+
+    @Autowired
+    private BookService bookService;
+
+    @Transactional
+    public void mulTx(){
+        bookService.checkout("zhangsan",1);
+        bookService.updatePrice(1,1000);
+        int i = 1/0;
+    }
+}
+如果在bookservice执行的话，会发现刚刚的效果就没有了，原因是外层调用的时候使用的AOP，但是本类方法自己的调用就是最最普通的调用，就是同一个事务
+例：
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void checkout(String username,int id) {
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+    }
+
+    @Transactional
+    public void mulTx(){
+        checkout("zhangsan",1);
+        updatePrice(1,1000);
+        int i = 1/0;
+    }
+}
+总结：
+1、事务传播级别是REQUIRED，不论内部外部异常，不论捕获未捕获，外部类中的DB都会roll back
+2、是REQUIRES_NEW，如果内部异常，外部其他代码不会roll back；如果外部异常，不会导致内部回滚
+3、是NESTED
+3、是SUPPORTS,如果外部有事务则执行事务，如果外部没有事务则内部不执行事务
+3、NOT_SUPPORTED,内部不执行事务，如果外部有事务将挂起
