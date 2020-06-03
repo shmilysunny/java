@@ -717,11 +717,14 @@ public class BookService {
     }
 }
 总结：
-1、事务传播级别是REQUIRED，不论内部外部异常，不论捕获未捕获，外部类中的DB都会roll back
-2、是REQUIRES_NEW，如果内部异常，外部其他代码不会roll back；如果外部异常，不会导致内部回滚
-3、是NESTED
+1、事务传播级别是REQUIRED，不论内部外部异常，本身没捕获都会rollback, 如果内部抛出异常，外部即便捕获，外部类中的DB也会rollback
+2、是REQUIRES_NEW，如果内部异常，外部其他代码不会rollback；如果外部异常，不会导致内部回滚
+3、是NESTED，如果内部异常，并且被捕获，外部其他代码不会rollback；如果外部异常，并且没有捕获，会导致内部回滚
 4、是SUPPORTS,如果外部有事务则执行事务，如果外部没有事务则内部不执行事务
 5、是NOT_SUPPORTED,当前方法不应该运行在事务中，如果有运行的事务，将它挂起
 6、是NEVER,当前方法不应该运行在事务中，如果外部有运行的事务，将抛出异常
 7、是MANDATORY,当前方法必须运行在事务内部，如果外部没有运行的事务，将抛出异常
+PROPAGATION_REQUIRES_NEW 启动一个新的, 不依赖于环境的 "内部" 事务. 这个事务将被完全 commited 或 rollback 而不依赖于外部事务, 它拥有自己的隔离范围, 自己的锁, 等等. 当内部事务开始执行时, 外部事务将被挂起, 内务事务结束时, 外部事务将继续执行. 
+另一方面, PROPAGATION_NESTED 开始一个 "嵌套的" 事务,  它是已经存在事务的一个真正的子事务. 嵌套事务开始执行时, 它将取得一个savepoint. 如果这个嵌套事务失败, 我们将回滚到此savepoint. 潜套事务是外部事务的一部分, 只有外部事务结束后它才会被提交. 
+由此可见, PROPAGATION_REQUIRES_NEW 和 PROPAGATION_NESTED 的最大区别在于, PROPAGATION_REQUIRES_NEW 完全是一个新的事务, 而PROPAGATION_NESTED 则是外部事务的子事务, 如果外部事务commit, 嵌套事务也会被commit, 这个规则同样适用于rollback
 
