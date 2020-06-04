@@ -74,7 +74,7 @@ public class Mgr04 {
     // 不能加final，final变量必须被初始化，不初始化就需要加静态代码块，如上
 	private static Mgr04 INSTANCE;
 	private Mgr04() {}
-    // synchronized锁定的是当前对象，因为是静态对象，所以锁定的是Mgr04这个对象
+    // synchronized锁定的是当前对象，因为是静态对象，所以锁定的是Mgr04.class这个对象
 	public static synchronized Mgr04 getInstance() {
 		if (INSTANCE == null) {
             // 测试
