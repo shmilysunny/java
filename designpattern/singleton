@@ -10,11 +10,92 @@ public class Mgr01 {
     public static Mgr01 getInstance() {
       return INSTANCE;
     }
+    // 测试
+    public static void main(String[] args) {
+        Mgr01 m1 = Mgr01.getInstance();
+        Mgr01 m2 = Mgr01.getInstance();
+        System.out.println(m1 == m2);// true
+    }
 }
 
-// 测试
-public static void main(String[] args) {
-    Mgr01 m1 = Mgr01.getInstance();
-    Mgr01 m2 = Mgr01.getInstance();
-    System.out.println(m1 == m2);// true
+/**
+ * 同上
+ */
+public class Mgr02 {
+    private static final Mgr01 INSTANCE;
+    static {
+		INSTANCE = new Mgr02();
+	}
+    private Mgr01() {};
+    public static Mgr01 getInstance() {
+      return INSTANCE;
+    }
+}
+
+/**
+ * 懒汉式
+ * 虽然达到了按需初始化的问题，但也带来了线程不安全的问题
+ */
+public class Mgr03 {
+    // 不能加final，final变量必须被初始化，不初始化就需要加静态代码块，如上
+	private static Mgr03 INSTANCE;
+	private Mgr03() {}
+	public static Mgr03 getInstance() {
+		if (INSTANCE == null) {
+            // 测试
+//			try {
+//				Thread.sleep(1);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+			INSTANCE = new Mgr03();
+		}
+		return INSTANCE;
+	}
+    // 测试
+	public static void main(String[] args) {
+		for (int i = 0; i < 100; i++) {
+			new Thread(
+				() -> {
+					System.out.println(Mgr03.getInstance().hashCode());
+				}
+			).start();
+		}
+	}
+}
+
+/**
+ * 懒汉式
+ * 虽然达到了按需初始化的问题，但也带来了线程不安全的问题
+ * 可以通过synchronized解决，但同时带来了效率下降的问题
+ */
+public class Mgr04 {
+    // 不能加final，final变量必须被初始化，不初始化就需要加静态代码块，如上
+	private static Mgr04 INSTANCE;
+	private Mgr04() {}
+    // synchronized锁定的是当前对象，因为是静态对象，所以锁定的是Mgr04这个对象
+	public static synchronized Mgr04 getInstance() {
+		if (INSTANCE == null) {
+            // 测试
+//			try {
+//				Thread.sleep(1);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+			INSTANCE = new Mgr04();
+		}
+		return INSTANCE;
+	}
+    // 测试
+	public static void main(String[] args) {
+		for (int i = 0; i < 100; i++) {
+			new Thread(
+				() -> {
+					System.out.println(Mgr04.getInstance().hashCode());
+				}
+			).start();
+		}
+	}
 }
