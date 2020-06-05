@@ -47,7 +47,6 @@ public class Mgr03 {
 //				Thread.sleep(1);
 //			} catch (InterruptedException e) {
 //				// TODO Auto-generated catch block
-//				e.printStackTrace();
 //			}
 			INSTANCE = new Mgr03();
 		}
@@ -81,7 +80,6 @@ public class Mgr04 {
 //			try {
 //				Thread.sleep(1);
 //			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
 			INSTANCE = new Mgr04();
@@ -94,6 +92,120 @@ public class Mgr04 {
 			new Thread(
 				() -> {
 					System.out.println(Mgr04.getInstance().hashCode());
+				}
+			).start();
+		}
+	}
+}
+
+/**
+ * 懒汉式
+ * 虽然达到了按需初始化的问题，但也带来了线程不安全的问题
+ * 可以通过synchronized解决，但同时带来了效率下降的问题
+ */
+public class Mgr05 {
+	private static Mgr05 INSTANCE;
+	private Mgr05() {}
+	public static Mgr05 getInstance() {
+		if (INSTANCE == null) {
+            // 妄图通过缩小同步代码块粒度的方式提高效率，但并不可行
+			synchronized (Mgr05.class) {
+                // 测试
+    //			try {
+    //				Thread.sleep(1);
+    //			} catch (InterruptedException e) {
+    //				e.printStackTrace();
+    //			}
+				INSTANCE = new Mgr05();
+			}
+		}
+		return INSTANCE;
+	}
+    // 测试
+	public static void main(String[] args) {
+		for (int i = 0; i < 100; i++) {
+			new Thread(
+				() -> {
+					System.out.println(Mgr05.getInstance().hashCode());
+				}
+			).start();
+		}
+	}
+}
+
+/**
+ * 懒汉式
+ * 虽然达到了按需初始化的问题，但也带来了线程不安全的问题
+ * 可以通过synchronized解决，但同时带来了效率下降的问题，相对完美
+ */
+public class Mgr06 {
+	private static Mgr06 INSTANCE;
+	private Mgr06() {}
+	public static Mgr06 getInstance() {
+		if (INSTANCE == null) {
+			synchronized (Mgr06.class) {
+                // 双重检查
+				if (INSTANCE == null) {
+                    // 测试
+        //			try {
+        //				Thread.sleep(1);
+        //			} catch (InterruptedException e) {
+        //				e.printStackTrace();
+        //			}
+					INSTANCE = new Mgr06();
+				}
+			}
+		}
+		return INSTANCE;
+	}
+    // 测试
+	public static void main(String[] args) {
+		for (int i = 0; i < 100; i++) {
+			new Thread(
+				() -> {
+					System.out.println(Mgr06.getInstance().hashCode());
+				}
+			).start();
+		}
+	}
+}
+
+/**
+ * 静态内部类方式
+ * JVM保真单例
+ * 外部类加载时不会加载静态内部类，这样可以实现懒加载，比方式一完美
+ */
+public class Mgr07 {
+	private Mgr07() {}
+	private static class Mgr07Holder {
+		private static final Mgr07 INSTANCE = new Mgr07();
+	}
+	public static Mgr07 getInstance() {
+		return Mgr07Holder.INSTANCE;
+	}
+    // 测试
+	public static void main(String[] args) {
+		for (int i = 0; i < 100; i++) {
+			new Thread(
+				() -> {
+					System.out.println(Mgr06.getInstance().hashCode());
+				}
+			).start();
+		}
+	}
+}
+
+/**
+ * 不仅可以解决线程同步，还可以防止反序列化
+ */
+public enum Mgr08 {
+	INSTANCE;
+    // 测试
+	public static void main(String[] args) {
+		for (int i = 0; i < 100; i++) {
+			new Thread(
+				() -> {
+					System.out.println(Mgr08.INSTANCE.hashCode());
 				}
 			).start();
 		}
