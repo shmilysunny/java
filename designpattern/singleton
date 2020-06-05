@@ -139,7 +139,7 @@ public class Mgr05 {
  * 可以通过synchronized解决，但同时带来了效率下降的问题，相对完美
  */
 public class Mgr06 {
-	private static Mgr06 INSTANCE;
+	private static volatile Mgr06 INSTANCE;
 	private Mgr06() {}
 	public static Mgr06 getInstance() {
 		if (INSTANCE == null) {
