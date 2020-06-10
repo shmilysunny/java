@@ -5,7 +5,7 @@
 堆排序    heop       nlog2n        nlog2n        nlog2n        1          不稳
 希尔排序  shell      n13           n²            n             1          不稳
 归并排序  merge      nlog2n        nlog2n        nlog2n        n          稳
-快速排序  quick      nlog2n        n²            nlog2n        nlog2n     不稳
+快速排序  quick      nlog2n        n²            nlog2n        log2n      不稳
 桶排序    buckel     n+k           n²            n             n+k        稳
 计数排序  couting    n+k           n+k           n+k           n+k        稳
 基数排序  radix      n*k           n*k           n*k           n+k        稳
