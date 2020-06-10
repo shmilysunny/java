@@ -27,6 +27,7 @@ public class Selection {
 				if (ary[minPos] > ary[j]) {
 					minPos = j;
 				}
+				// (n-1)+(n-2)+(n-3)+...+1
 			}
 			setArray(i, minPos, ary);
 		}
