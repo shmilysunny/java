@@ -64,3 +64,24 @@ public static void main(String[] args) {
 冒泡：基本不用，太慢
 选择：基本不用，不稳
 插入：样本小且基本有序的时候效率比较高
+
+希尔排序
+public static void main(String[] args) {
+  int ary[] = new int[] {9, 6, 11, 3, 5, 12, 8, 7, 10, 15, 14, 4, 1, 13, 2};
+
+  int h = 1;
+  while(h <= ary.length/3) {
+    h=h*3+1;  //Knuth序列
+  }
+  for (int gap = h; gap > 0; gap = (gap-1)/3) {
+    for (int i = gap; i < ary.length; i++) {
+      for (int j = i; j > gap-1; j-=gap) {
+        if (ary[j] < ary[j-gap]) {
+          int temp = ary[j-gap];
+          ary[j-gap] = ary[j];
+          ary[j] = temp;
+        }
+      }
+    }
+  }
+}
