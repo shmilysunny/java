@@ -85,3 +85,60 @@ public static void main(String[] args) {
     }
   }
 }
+
+归并排序
+java对于对象的排序就是归并排序，请求用原来旧归排，不请求时用timsort多路归并(小于最小值32时直接用二分插入排序)
+对于基本类型的排序是双轴快排
+public static void main(String[] args) {
+  int ary[] = new int[] {1, 3, 5, 2, 4, 8, 9, 10, 11};
+
+  sort(ary, 0, 6);
+
+  merge(ary, 0, 4, ary.length-1);
+
+  for (int temp : ary) {
+    System.out.print(temp + " ");
+  }
+  System.out.println();
+
+}
+
+static void sort(int[] ary, int left, int right) {
+  if (left == right) return;
+
+  int mid = left + (right-left)/2;
+
+  sort(ary, left, mid);
+
+  sort(ary, mid+1, right);
+
+  merge(ary, left, mid, right);
+}
+
+static void merge(int[] ary, int left, int midpos, int right) {
+  int temp[] = new int[right-left+1];
+
+  int mid = midpos;
+
+  int i = left;
+  int j = mid + 1;
+  int k = 0;
+
+  while (i <= mid && j <= right) {
+    if (ary[i] > ary[j]) {
+      temp[k++] = ary[j++];
+    } else {
+      temp[k++] = ary[i++];
+    }
+  }
+  while (i <= mid) {
+    temp[k++] = ary[i++];
+  }
+  while (j <= right) {
+    temp[k++] = ary[j++];
+  }
+
+  for(int m = 0; m < temp.length; m++) {
+    ary[left + m] = temp[m];
+  }
+}
