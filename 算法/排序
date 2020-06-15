@@ -96,11 +96,7 @@ public static void main(String[] args) {
 
   merge(ary, 0, 4, ary.length-1);
 
-  for (int temp : ary) {
-    System.out.print(temp + " ");
-  }
-  System.out.println();
-
+  System.out.println(Arrays.toString(ary));
 }
 
 static void sort(int[] ary, int left, int right) {
@@ -187,3 +183,4 @@ static int partition(int[] ary, int leftbound, int rightbound) {
 
 计数排序
 非比较排序 桶排序的一种
+适合量大范围小的
