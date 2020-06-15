@@ -142,3 +142,48 @@ static void merge(int[] ary, int left, int midpos, int right) {
     ary[left + m] = temp[m];
   }
 }
+
+排序中最快的算法--快速排序
+改进的快速排序--双轴快排
+public static void main(String[] args) {
+  int ary[] = new int[] {7, 3, 2, 6, 8, 1, 9, 5, 4, 6, 10, 6};
+
+  sort(ary, 0, ary.length -1);
+}
+
+static void sort(int[] ary, int leftbound, int rightbound) {
+  if (leftbound >= rightbound) {
+    return;
+  }
+  int mid = partition(ary, leftbound, rightbound);
+  sort(ary, leftbound, mid-1);
+  sort(ary, mid, rightbound);
+}
+
+
+static int partition(int[] ary, int leftbound, int rightbound) {
+  int left = leftbound;
+  int pivot = rightbound;
+  int right = pivot - 1;
+  while (left <= right) {
+    while (left <= right && ary[left] <= ary[pivot]) {
+      left++;
+    }
+    while (left <= right && ary[right] > ary[pivot]) {
+      right--;
+    }
+    if (left < right) {
+      int tmp = ary[left];
+      ary[left] = ary[right];
+      ary[right] = tmp;
+    }
+  }
+  int tmp = ary[left];
+  ary[left] = ary[pivot];
+  ary[pivot] = tmp;
+
+  return left;
+}
+
+计数排序
+非比较排序 桶排序的一种
