@@ -6,7 +6,7 @@
 希尔排序  shell      n1.3          n²            n             1          不稳
 归并排序  merge      nlog2n        nlog2n        nlog2n        n          稳
 快速排序  quick      nlog2n        n²            nlog2n        log2n      不稳
-桶排序    buckel     n+k           n²            n             n+k        稳
+桶排序    bucket     n+k           n²            n             n+k        稳
 计数排序  couting    n+k           n+k           n+k           n+k        稳
 基数排序  radix      n*k           n*k           n*k           n+k        稳
 
@@ -184,3 +184,50 @@ static int partition(int[] ary, int leftbound, int rightbound) {
 计数排序
 非比较排序 桶排序的一种
 适合量大范围小的
+public static void main(String[] args) {
+  int[] ary = new int[] {2, 4, 2, 3, 7, 1, 1, 0, 0, 5, 6, 9, 8, 5, 7, 4, 0, 9};
+
+  int[] count = new int[10];
+
+  for (int i = 0; i < ary.length; i++) {
+    count[ary[i]]++;
+  }
+  // 数组的范围就是新数组的下标，个数就是新数组的值[3, 2, 2, 1, 2, 2, 1, 2, 1, 2]
+
+  for (int i = 1; i < count.length; i++) {
+    count[i] = count[i] + count[i-1];
+  }
+  // 累计出个数[3, 5, 7, 8, 10, 12, 13, 15, 16, 18]
+
+  int[] result = new int[ary.length];
+  for (int i = ary.length - 1; i >= 0; i--) {
+    result[--count[ary[i]]] = ary[i];
+  }
+  // [0, 0, 0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 9]
+}
+基数排序
+根据键值的每位数字来分配桶
+public static void main(String[] args) {
+  int []ary = new int[] {3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48};
+
+  int mod = 10;
+  int dev = 1;
+  for (int i = 0; i < 2; i++, mod*=10, dev*=10) {
+    int[][] result = new int[10][0];
+    for (int j = 0; j < ary.length; j++) {
+      int idx = (ary[j]%mod)/dev;
+      result[idx] = Arrays.copyOf(result[idx], result[idx].length + 1);
+      result[idx][result[idx].length - 1] = ary[j];
+    }
+    // [[50], [], [2], [3], [44, 4], [5, 15], [36, 26, 46], [47, 27], [38, 48], [19]]
+    // [[2, 3, 4, 5], [15, 19], [26, 27], [36, 38], [44, 46, 47, 48], [50], [], [], [], []]
+    int idx = 0;
+    for (int[] bucket : result) {
+      for (int value : bucket) {
+        ary[idx++] = value;
+      }
+    }
+  }
+}
+桶排序
+不常用
