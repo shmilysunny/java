@@ -62,3 +62,69 @@ public class Main {
 	}
 }
 
+abstractfactory
+public abstract class Vehicle {
+	abstract void go();
+}
+public abstract class Weapon {
+	abstract void shoot();
+}
+public abstract class AbstractFactory {
+	public abstract Weapon getWeapon();
+	public abstract Vehicle getVehicle();
+}
+public class Car extends Vehicle {
+	public void go() {
+		System.out.println("car go....");
+	}
+}
+public class AK47 extends Weapon {
+	public void shoot() {
+        System.out.println("tututututu....");
+    }
+}
+public class MordenFactory extends AbstractFactory {
+	@Override
+	public Weapon getWeapon() {
+		return new AK47();
+	}
+	@Override
+	public Vehicle getVehicle() {
+		return new Car();
+	}
+}
+public class Broom extends Vehicle {
+	public void go() {
+		System.out.println("Broom go....");
+	}
+}
+public class MagicStick extends Weapon {
+	public void shoot() {
+        System.out.println("diandian....");
+    }
+}
+public class MagicFactory extends AbstractFactory{
+	@Override
+	public Weapon getWeapon() {
+		return new MagicStick();
+	}
+	@Override
+	public Vehicle getVehicle() {
+		return new Broom();
+	}
+}
+public class Main {
+	public static void main(String[] args) {
+		AbstractFactory f = new MordenFactory();
+		Weapon w = f.getWeapon();
+		w.shoot();
+		Vehicle v = f.getVehicle();
+		v.go();
+		
+		AbstractFactory f2 = new MagicFactory();
+		Weapon w2 = f2.getWeapon();
+		w2.shoot();
+		Vehicle v2 = f2.getVehicle();
+		v2.go();
+	}
+}
