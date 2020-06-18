@@ -1,0 +1,64 @@
+SimpleFactory
+public interface Moveable {
+	public void go();
+}
+public class Car implements Moveable {
+	public void go() {
+		System.out.println("car go....");
+	}
+}
+public class Plane implements Moveable {
+	public void go() {
+		System.out.println("Plane go....");
+	}
+}
+public class SimpleVehicleFactory {
+	public Car creatCar() {
+		return new Car();
+	}
+	public Plane creatPlane() {
+		return new Plane();
+	}
+}
+public class Main {
+	public static void main(String[] args) {
+		Moveable m = new SimpleVehicleFactory().creatCar();
+		m.go();
+		Moveable m2 = new SimpleVehicleFactory().creatPlane();
+		m2.go();
+	}
+}
+
+factorymethod
+public interface Moveable {
+	public void go();
+}
+public class Car implements Moveable {
+	public void go() {
+		System.out.println("car go....");
+	}
+}
+public class CarFactory {
+	public Moveable create() {
+		return new Car();
+	}
+}
+public class Plane implements Moveable {
+	public void go() {
+		System.out.println("Plane go....");
+	}
+}
+public class PlaneFactory {
+	public Moveable create() {
+		return new Plane();
+	}
+}
+public class Main {
+	public static void main(String[] args) {
+		Moveable m = new CarFactory().create();
+		m.go();
+		Moveable m2 = new PlaneFactory().create();
+		m2.go();
+	}
+}
+
