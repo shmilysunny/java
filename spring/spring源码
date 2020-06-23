@@ -1,4 +1,3 @@
-  
 ClassPathXmlApplicationContext--ClassPathXmlApplicationContext:refresh
 	AbstractApplicationContext--refresh:obtainFreshBeanFactory
 									obtainFreshBeanFactory:refreshBeanFactory
@@ -24,4 +23,13 @@ ClassPathXmlApplicationContext--ClassPathXmlApplicationContext:refresh
 			AbstractBeanFactory--getBean:doGetBean
 									doGetBean:this.getSingleton
 				DefaultSingletonBeanRegistry--getSingleton(三级缓存，为了解决循环依赖)
+									doGetBean:createBean
+										AbstractAutowireCapableBeanFactory--createBean:doCreateBean
+																				doCreateBean:createBeanInstance、populateBean(填充属性，DI)、initializeBean
+																					populateBean:applyPropertyValues
+																						applyPropertyValues:setPropertyValues
+											AbstractPropertyAccessor--setPropertyValues:setPropertyValue
+												AbstractNestablePropertyAccessor--setPropertyValue:processKeyedProperty(tokens不为空，设置集合类型属性)
+																					setPropertyValue:processLocalProperty(tokens, pv)(tokens为空，设置非集合类型属性)
+																						ph.setValue(使用JDK内省技术，对指定属性的setter方法的获取)
 				
