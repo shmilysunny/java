@@ -24,3 +24,4 @@ ClassPathXmlApplicationContext--ClassPathXmlApplicationContext:refresh
 			AbstractBeanFactory--getBean:doGetBean
 									doGetBean:this.getSingleton
 				DefaultSingletonBeanRegistry--getSingleton(三级缓存，为了解决循环依赖)
+				
