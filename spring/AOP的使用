@@ -2,6 +2,9 @@ AOP：Aspect Oriented Programming 面向切面编程
 OOP：Object Oriented Programming 面向对象编程
 面向切面编程：基于OOP基础之上新的编程思想，OOP面向的主要对象是类，而AOP面向的主要对象是切面，在处理日志、安全管理、事务管理等方面有非常重要的作用。AOP是Spring中重要的核心点，虽然IOC容器没有依赖AOP，但是AOP提供了非常强大的功能，用来对IOC做补充。通俗点说的话就是在程序运行期间，将某段代码动态切入到指定方法的指定位置进行运行的这种编程方式。
 AOP是通过预编译方式和运行期动态代理实现程序功能的，而Spring是运用的后者运行期动态代理
+AspectJ是一个Java实现的AOP框架，ApectJ采用的就是静态织入的方式也就是编译期织入，Spring AOP采用的是运行时增强的代理技术，Spring基于AspectJ的AOP使用就是指的Spring + AspectJ整合
+<aop:aspectj-autoproxy>注解方式时使用
+<aop:config>xml时候使用 子标签<aop:advisor advice-ref=""></aop:advisor>为Spring AOP时使用 <aop:aspect ref="">为Spring + AspectJ整合时使用，通常用此标签
 
 
 JDK本身的动态代理必须需要接口和实现类，CGLIB可以避免这个缺陷，不必定义接口
