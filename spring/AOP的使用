@@ -429,6 +429,21 @@ Spring从不同的事务管理API中抽象出了一整套事务管理机制，�
     <!--开启基于注解的事务控制模式，依赖tx名称空间-->
     <tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
 </beans>
+纯XML方式的事务控制配置
+ <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <aop:config>
+        <aop:pointcut id="myPointCut" expression="execution(* com.*.service.*.*(..))"/>
+        <aop:advisor advice-ref="myAdvice" pointcut-ref="myPointCut"></aop:advisor>
+    </aop:config>
+    <tx:advice id="myAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="upd"/>
+            <tx:method name="save" propagation="REQUIRES_NEW"></tx:method>
+            <tx:method name="updYear" propagation="REQUIRES_NEW"></tx:method>
+        </tx:attributes>
+    </tx:advice>
 
 @Service
 public class BookService {
