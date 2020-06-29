@@ -93,3 +93,177 @@ public class HelloController implements Controller {
 ${msg}
 </body>
 </html>
+
+基于注解的Hello_SpringMVC
+1、添加pom依赖(同上)
+2、编写web.xml文件(同上)
+3、编写applicationContext.xml文件
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--自动扫描包，由IOC容器进行控制管理-->
+    <context:component-scan base-package="com.study"></context:component-scan>
+    <!-- 视图解析器 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+          id="internalResourceViewResolver">
+        <!-- 前缀 -->
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <!-- 后缀 -->
+        <property name="suffix" value=".jsp" />
+    </bean>
+</beans>
+4、编写HelloController.java
+@Controller
+public class HelloController{
+    /*
+    * @RequestMapping就是用来标识此方法用来处理什么请求，其中的/可以取消
+    * 取消后默认也是从当前项目的根目录开始查找，一般在编写的时候看个人习惯
+    * 同时，@RequestMapping也可以用来加在类上，
+    * */
+    @RequestMapping("/hello")
+    public String hello(Model model){
+        model.addAttribute("msg","hello,SpringMVC");
+        return "hello";
+    }
+}
+5、编写hello.jsp(同上)
+
+注意细节
+1、web.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+    <!--配置DispatcherServlet-->
+    <servlet>
+        <servlet-name>springmvc</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!--
+		关联springmvc的配置文件
+		此配置文件的属性可以不添加，但是需要在WEB-INF的目录下创建 前端控制器名称-servlet.xml文件
+		-->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:applicationContext.xml</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>springmvc</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+</web-app>
+2、web.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+    <!--配置DispatcherServlet-->
+    <servlet>
+        <servlet-name>springmvc</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!--
+		关联springmvc的配置文件
+		此配置文件的属性可以不添加，但是需要在WEB-INF的目录下创建 前端控制器名称-servlet.xml文件
+		-->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:applicationContext.xml</param-value>
+        </init-param>
+    </servlet>
+    <!--匹配servlet的请求，
+    /：标识匹配所有请求，但是不会拦截jsp页面
+    /*：拦截所有请求，拦截jsp页面
+
+     但是需要注意的是，当配置成index.html的时候，会发现请求不到
+     原因在于，tomcat下也有一个web.xml文件，所有的项目下web.xml文件都需要继承此web.xml
+     在服务器的web.xml文件中有一个DefaultServlet用来处理静态资源，但是url-pattern是/
+     而我们在自己的配置文件中如果添加了url-pattern=/会覆盖父类中的url-pattern，此时在请求的时候
+     DispatcherServlet会去controller中做匹配，找不到则直接报404
+     而在服务器的web.xml文件中包含了一个JspServlet的处理，所以不过拦截jsp请求
+    -->
+    <servlet-mapping>
+        <servlet-name>springmvc</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+</web-app>
+3、@RequestMapping
+@RequestMapping用来匹配客户端发送的请求，可以在方法上使用，也可以在类上使用
+	方法：表示用来匹配要处理的请求
+    类上：表示为当前类的所有方法的请求地址添加一个前置路径，访问的时候必须要添加此路径
+        什么时候需要添加此注解？当包含多个controller，通过在不同的controller中包含同名的请求的时候需要添加
+在整个项目的不同方法上不能包含相同的@RequestMapping值，除此以外，@RequestMapping注解还可以添加很多额外的属性值，用来精确匹配请求
+@RequestMapping还包含了很多复杂的匹配功能，提供了通配符的支持
+
+@Controller
+@RequestMapping("/study")
+public class HelloController{
+
+    /*
+    * @RequestMapping就是用来标识此方法用来处理什么请求，其中的/可以取消
+    * 取消后默认也是从当前项目的根目录开始查找，一般在编写的时候看个人习惯
+    * 同时，@RequestMapping也可以用来加在类上，
+    * */
+    @RequestMapping("/hello")
+    public String hello(Model model){
+        model.addAttribute("msg","hello,SpringMVC");
+        return "hello";
+    }
+
+    /**
+     * Request的其他属性值
+     *  value:要匹配的请求
+     *  method:限制发送请求的方式： POST GET
+     *  params:表示请求要接受的参数,如果定义了这个属性，那么发送的时候必须要添加参数
+     *         params有几种匹配规则
+     *          1、直接写参数的名称，param1,param2
+     *              params = {"username"}
+     *          2、表示请求不能包含的参数，！param1
+     *              params = {"!username"}
+     *          3、表示请求中需要要包含的参数但是可以限制值 param1=values  param1!=value
+     *              params = {"username=123","age"}
+     *              params = {"username!=123","age"}
+     *  headers:填写请求头信息
+     *          chrome：User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36
+     *          firefox:User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0
+     *
+     *  consumers:只接受内容类型是哪种的请求，相当于指定Content-Type
+     *  produces:返回的内容类型 Content-Type：text/html;charset=utf-8
+     *
+     * @return
+     */
+    @RequestMapping(value = "/hello2",method = RequestMethod.POST)
+    public String hello2(){
+        return "hello";
+    }
+
+    @RequestMapping(value = "/hello3",params = {"username!=123","age"})
+    public String hello3(String username){
+        System.out.println(username);
+        return "hello";
+    }
+
+    @RequestMapping(value = "/hello4",headers = {"User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0"})
+    public String hello4(){
+        return "hello";
+    }
+    
+    /**
+     * @Request包含三种模糊匹配的方式，分别是：
+     *  ？：能替代任意一个字符
+     *  *: 能替代任意多个字符和一层路径
+     *  **：能代替多层路径
+     * 如果能匹配到多个请求，那么优先是精准匹配，其次是模糊匹配
+     * @return
+     */
+    @RequestMapping(value = "/**/h*llo?")
+    public String hello5(){
+        System.out.println("hello5");
+        return "hello";
+    }
+}
