@@ -267,3 +267,15 @@ public class HelloController{
         return "hello";
     }
 }
+4、@PathVariable
+如果需要将请求路径中的参数作为参数可以使用@PathVariable注解，此注解就是提供了对占位符URL的支持，就是将URL中占位符参数绑定到控制器处理方法的参数中。
+@Controller
+@RequestMapping("/mashibing")
+public class HelloController{
+
+    @RequestMapping(value = "/pathVariable/{name}/{id}")
+    public String pathVariable(@PathVariable("name") String name, @PathVariable("id") Integer id){
+        System.out.println(name);
+        return "hello";
+    }
+}
