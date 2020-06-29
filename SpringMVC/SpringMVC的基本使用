@@ -1,1 +1,12 @@
 ![image](https://github.com/shmilysunny/java/blob/master/SpringMVC/springmvc%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B.jpg)
+1、DispatcherServlet表示前置控制器，是整个SpringMVC的控制中心。用户发出请求，DispatcherServlet接收请求并拦截请求。
+2、HandlerMapping为处理器映射。DispatcherServlet调用HandlerMapping,HandlerMapping根据请求url查找Handler。
+3、返回处理器执行链，根据url查找控制器，并且将解析后的信息传递给DispatcherServlet
+4、HandlerAdapter表示处理器适配器，其按照特定的规则去执行Handler。
+5、执行handler找到具体的处理器
+6、Controller将具体的执行信息返回给HandlerAdapter,如ModelAndView。
+7、HandlerAdapter将视图逻辑名或模型传递给DispatcherServlet。
+8、DispatcherServlet调用视图解析器(ViewResolver)来解析HandlerAdapter传递的逻辑视图名。
+9、视图解析器将解析的逻辑视图名传给DispatcherServlet。
+10、DispatcherServlet根据视图解析器解析的视图结果，调用具体的视图，进行试图渲染
+11、将响应数据返回给客户端
