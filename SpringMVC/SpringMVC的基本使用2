@@ -1,0 +1,298 @@
+（1）SpringMVC的请求处理
+1、SpringMVC对请求参数的处理
+	在之前的servlet中我们可以通过request.getParameter()来获取请求中的参数，但是在我们编写的SpringMVC的应用程序中，在具体请求的方法中并不包含request参数，那么我们应该如何获取请求中的参数呢？
+  需要使用以下几个注解：
+​ @RequestParam：获取请求的参数
+​ @RequestHeader：获取请求头信息
+​ @CookieValue：获取cookie中的值
+
+@RequestParam的基本使用
+@Controller
+public class RequestController {
+
+    /**
+     * 如何获取SpringMVC中请求中的信息
+     *  默认情况下，可以直接在方法的参数中填写跟请求一样的名称，此时会默认接受参数
+     *      如果有值，直接赋值，如果没有，那么直接给空值
+     *
+     * @RequestParam:获取请求中的参数值,使用此注解之后，参数的名称不需要跟请求的名称一致，但是必须要写
+     *      public String request(@RequestParam("user") String username){
+     *
+     *      此注解还包含三个参数：
+     *      value:表示要获取的参数值
+     *      required：表示此参数是否必须，默认是true，如果不写参数那么会报错，如果值为false，那么不写参数不会有任何错误
+     *      defaultValue:如果在使用的时候没有传递参数，那么定义默认值即可
+     *
+     *
+     * @param username
+     * @return
+     */
+    @RequestMapping("/request")
+    public String request(@RequestParam(value = "user",required = false,defaultValue = "hehe") String username){
+        System.out.println(username);
+        return "success";
+    }
+}
+
+@RequestHeader的基本使用：
+@Controller
+public class RequestController {
+
+    /**
+     * 如果需要获取请求头信息该如何处理呢？
+     *  可以使用@RequestHeader注解，
+     *      public String header(@RequestHeader("User-Agent") String agent){
+     *      相当于  request.getHeader("User-Agent")
+     *
+     *      如果要获取请求头中没有的信息，那么此时会报错，同样，此注解中也包含三个参数,跟@RequestParam一样
+     *          value
+     *          required
+     *          defalutValue
+     * @param agent
+     * @return
+     */
+    @RequestMapping("/header")
+    public String header(@RequestHeader("User-Agent") String agent){
+        System.out.println(agent);
+        return "success";
+    }
+}
+
+@CookieValue的基本使用
+@Controller
+public class RequestController {
+
+    /**
+     * 如果需要获取cookie信息该如何处理呢？
+     *  可以使用@CookieValue注解，
+     *      public String cookie(@CookieValue("JSESSIONID") String id){
+     *      相当于
+     *      Cookie[] cookies = request.getCookies();
+     *      for(Cookie cookie : cookies){
+     *          cookie.getValue();
+     *      }
+     *      如果要获取cookie中没有的信息，那么此时会报错，同样，此注解中也包含三个参数,跟@RequestParam一样
+     *          value
+     *          required
+     *          defalutValue
+     * @param id
+     * @return
+     */
+    @RequestMapping("/cookie")
+    public String cookie(@CookieValue("JSESSIONID") String id){
+        System.out.println(id);
+        return "success";
+    }
+}
+
+如果请求中传递的是某一个对象的各个属性值，此时如何在控制器的方法中获取对象的各个属性值呢？
+​ 在SpringMVC的控制中，能直接完成对象的属性赋值操作，不需要人为干预。
+User.java
+public class User {
+    private Integer id;
+    private String name;
+    private Integer age;
+    private Date date;
+    private Address address;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                ", date=" + date +
+                ", address=" + address +
+                '}';
+    }
+}
+Address.java
+public class Address {
+    private String province;
+    private String city;
+    private String town;
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getTown() {
+        return town;
+    }
+
+    public void setTown(String town) {
+        this.town = town;
+    }
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "province='" + province + '\'' +
+                ", city='" + city + '\'' +
+                ", town='" + town + '\'' +
+                '}';
+    }
+}
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<form action="addUser" method="post">
+    编号:<input type="text" name="id"/><br>
+    姓名:<input type="text" name="name"/><br>
+    年龄:<input type="text" name="age"/><br>
+    日期:<input type="text" name="date"/><br>
+    省份:<input type="text" name="address.province"/><br>
+    城市:<input type="text" name="address.city"/><br>
+    区域:<input type="text" name="address.town"/><br>
+    <input type="submit" value="submit"/><br>
+</form>
+</body>
+</html>
+@Controller
+public class UserController {
+
+    @RequestMapping("/addUser")
+    public String addUser(User user){
+        System.out.println(user);
+        return "success";
+    }
+}
+
+2、乱码问题的解决
+我们在表单或者发送请求的时候，经常会遇到中文乱码的问题，那么如何解决乱码问题呢？
+​ GET请求：在server.xml文件中，添加URIEncoding=“UTF-8”
+​ POST请求：编写过滤器进行实现
+注意：如果配置了多个过滤器，那么字符编码过滤器一定要在最前面，否则失效。
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+    <!--配置DispatcherServlet-->
+    <servlet>
+        <servlet-name>springmvc</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:springmvc-servlet.xml</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>springmvc</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <!--解决post请求乱码-->
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <!--解决响应乱码-->
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+</web-app>
+
+3、SpringMVC对原生API的支持
+@Controller
+public class UserController {
+
+    @RequestMapping("/addUser")
+    public String addUser(User user){
+        System.out.println(user);
+        return "success";
+    }
+
+    /**
+     * SpringMVC也可以在参数上使用原生的Servlet API
+     *
+     *  HttpSession
+     *  HttpServletRequest
+     *  HttpServletResponse
+     *
+     *  java.security.Principal 安全协议相关
+     *  Locale：国际化相关的区域信息对象
+     *  InputStream:
+     *      ServletInputStream inputStream = request.getInputStream();
+     *  OutputStream:
+     *      ServletOutputStream outputStream = response.getOutputStream();
+     *  Reader:
+     *      BufferedReader reader = request.getReader();
+     *  Writer:
+     *      PrintWriter writer = response.getWriter();
+     * @param session
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("api")
+    public String api(HttpSession session, HttpServletRequest request, HttpServletResponse response){
+        request.setAttribute("requestParam","request");
+        session.setAttribute("sessionParam","session");
+        return "success";
+    }
+}
