@@ -334,7 +334,6 @@ public class OutputController {
     }
 }
 发现当使用modelAndView对象的时候，返回值的类型也是此对象，可以将要跳转的页面设置成view的名称，来完成跳转的功能，同时数据也是放到request作用中
-
 6、使用session传输数据到页面
 @SessionAttribute：此注解可以表示，当向request作用域设置数据的时候同时也要向session中保存一份,此注解有两个参数，一个value（表示将哪些值设置到session中），另外一个type（表示按照类型来设置数据，一般不用，因为有可能会将很多数据都设置到session中，导致session异常）。
 Controller
@@ -348,3 +347,213 @@ public class OutputController {
         return "output";
     }
 }
+7、使用@ModelAttribute来获取请求中的数据
+@ModelAttribute注解用于将方法的参数或者方法的返回值绑定到指定的模型属性上，并返回给web视图。首先来介绍一个业务场景，来帮助大家做理解，在实际工作中，有些时候我们在修改数据的时候可能只需要修改其中几个字段，而不是全部的属性字段都获取，那么当提交属性的时候，从form表单中获取的数据就有可能只包含了部分属性，此时再向数据库更新的时候，肯定会丢失属性，因为对象的封装是springmvc自动帮我们new的，所以此时需要先将从数据库获取的对象保存下来，当提交的时候不是new新的对象，而是在原来的对象上进行属性覆盖，此时就需要使用@ModelAttribute注解。
+@Controller
+public class UserController {
+
+    Object o1 = null;
+    Object o2 = null;
+    Object o3 = null;
+
+    @RequestMapping("update")
+    public String update(@ModelAttribute("user") User user,Model model){
+        System.out.println(user);
+        o2 = model;
+        //可以看到所有的model都是同一个对象
+        System.out.println(o1==o2);
+        //可以看到存储的user对象也是同一个
+        System.out.println(user == o3);
+        return "output";
+    }
+
+    @ModelAttribute
+    public void MyModelAttribute(Model model){
+        o1 = model;
+        User user = new User();
+        user.setName("张三");
+        model.addAttribute("user",user);
+        System.out.println("modelAttribute:"+user);
+        o3 = user;
+    }
+}
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+  <head>
+    <title>$Title$</title>
+  </head>
+  <body>
+  <form action="update" method="post">
+    <input type="hidden" value="1" name="id">
+    姓名：张三<br>
+    密码：<input type="text" name="password"><br>
+    年龄：<input type="text" name="age"><br>
+    <input type="submit" value="提交">
+  </form>
+  </body>
+</html>
+其实在使用的时候可以简化写法，也就是说，在方法的参数上不加@ModelAttribute也不会有问题
+@RequestMapping("update")
+public String update(User user,Model model){
+	System.out.println(user);
+	o2 = model;
+	//可以看到所有的model都是同一个对象
+	System.out.println(o1==o2);
+	//可以看到存储的user对象也是同一个
+	System.out.println(user == o3);
+	return "output";
+}
+如果添加的@ModelAttribute（“”）属性的值不对，那么也是获取不到值的。同时可以添加@SessionAttributes属性，但是注意，如果没有设置值的话，会报错
+@Controller
+@SessionAttributes("u")
+public class UserController {
+
+    Object o1 = null;
+    Object o2 = null;
+    Object o3 = null;
+
+    @RequestMapping("update")
+    public String update(@ModelAttribute("u") User user,Model model){
+        System.out.println(user);
+        o2 = model;
+        //可以看到所有的model都是同一个对象
+        System.out.println(o1==o2);
+        //可以看到存储的user对象也是同一个
+        System.out.println(user == o3);
+        return "output";
+    }
+
+    @ModelAttribute
+    public void MyModelAttribute(Model model){
+        o1 = model;
+        User user = new User();
+        user.setName("张三");
+        model.addAttribute("user",user);
+        System.out.println("modelAttribute:"+user);
+        o3 = user;
+    }
+}
+注意：ModelAttribute除了可以使用设置值到model中之外，还可以利用返回值
+@Controller
+public class UserController {
+
+    Object o1 = null;
+    Object o2 = null;
+    Object o3 = null;
+
+    @RequestMapping("update")
+    public String update(@ModelAttribute("u") User user,Model model){
+        System.out.println(user);
+        o2 = model;
+        //可以看到所有的model都是同一个对象
+        System.out.println(o1==o2);
+        //可以看到存储的user对象也是同一个
+        System.out.println(user == o3);
+        return "output";
+    }
+
+    @ModelAttribute("u")
+    public User MyModelAttribute(Model model){
+        o1 = model;
+        User user = new User();
+        user.setName("张三");
+        System.out.println("modelAttribute:"+user);
+        o3 = user;
+        return user;
+    }
+}
+总结：通过刚刚的给参数赋值，大家应该能够发现，当给方法中的参数设置值的时候，如果添加了@ModelAttribute注解，那么在查找值的时候，是遵循以下方式：
+1、方法的参数使用参数的类型首字母小写，或者使用@ModelAttribute("")的值
+2、先看之前是否在model中设置过该属性值，如果设置过就直接获取
+3、看@SessionAttributes注解标注类中的方法是否给session中赋值，如果有的话，也是直接获取，没有报异常
+
+8、使用forward实现页面转发
+@Controller
+public class ForWardController {
+    /**
+     * 当使用转发的时候可以添加前缀forward:index.jsp,此时是不会经过视图解析器的，所以要添加完整的名称
+     *
+     * forward:也可以由一个请求跳转到另外一个请求
+     *
+     * @return
+     */
+    @RequestMapping("/forward01")
+    public String forward(){
+        System.out.println("1");
+        return "forward:/index.jsp";
+    }
+
+    @RequestMapping("/forward02")
+    public String forward2(){
+        System.out.println("2");
+        return "forward:/forward01";
+    }
+}
+
+9、使用redirect来实现重定向
+@Controller
+public class RedirectController {
+    /**
+     * redirect :重定向的路径
+     *      相当于 response.sendRedirect("index.jsp")
+     *      跟视图解析器无关
+     * @return
+     */
+    @RequestMapping("redirect")
+    public String redirect(){
+        System.out.println("redirect");
+        return "redirect:/index.jsp";
+    }
+
+    @RequestMapping("/redirect2")
+    public String redirect2(){
+        System.out.println("redirect2");
+        return "redirect:/redirect";
+    }
+}
+重定向和转发的区别：
+转发：
+​ 由服务器的页面进行跳转，不需要客户端重新发送请求：
+​ 特点如下：
+​ 1、地址栏的请求不会发生变化，显示的还是第一次请求的地址
+​ 2、请求的次数，有且仅有一次请求
+​ 3、请求域中的数据不会丢失
+​ 4、根目录：localhost:8080/项目地址/,包含了项目的访问地址
+重定向：
+​ 在浏览器端进行页面的跳转，需要发送两次请求（第一次是人为的，第二次是自动的）
+​ 特点如下：
+​ 1、地址栏的地址发生变化，显示最新发送请求的地址
+​ 2、请求次数：2次
+​ 3、请求域中的数据会丢失，因为是不同的请求
+​ 4、根目录：localhost:8080/ 不包含项目的名称
+​ 对比：
+区别 	　　    转发forward() 	　　 重定向sendRedirect()
+根目录 	     包含项目访问地址 	　 没有项目访问地址
+地址栏 	     不会发生变化 	　　　 会发生变化
+哪里跳转 	    服务器端进行的跳转    浏览器端进行的跳转
+请求域中数据   不会丢失 	         会丢失
+
+10、静态资源的访问
+当页面中包含静态资源的时候发现我们请求的图片根本访问不到
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    pageContext.setAttribute("ctx",request.getContextPath());
+%>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+hello springmvc
+<img src="${ctx}/images/timg.jpg">
+</body>
+</html>
+此时是找不到对应的mapping映射的，此时是因为DispatcherServlet会拦截所有的请求，而此时我们没有对应图片的请求处理方法，所以此时报错了，想要解决的话非常简单，只需要添加一个配置即可
+<!--
+此配置表示  我们自己配置的请求由controller来处理，但是不能请求的处理交由tomcat来处理
+静态资源可以访问，但是动态请求无法访问
+-->
+<mvc:default-servlet-handler/>
+但是加上此配置之后，大家又发现此时除了静态资源无法访问之外，我们正常的请求也无法获取了，因此还需要再添加另外的配置：
+<!--保证静态资源和动态请求都能够访问-->
+<mvc:annotation-driven></mvc:annotation-driven>
