@@ -296,3 +296,55 @@ public class UserController {
         return "success";
     }
 }
+4、使用Model，Map，ModelMap传输数据到页面
+在方法的参数上传入Model，ModelMap,Map类型，此时都能够将数据传送回页面,Model和ModelMap都继承自Map
+@Controller
+public class OutputController {
+
+    @RequestMapping("output1")
+    public String output1(Model model){
+        model.addAttribute("msg","hello,Springmvc");
+        return "output";
+    }
+
+    @RequestMapping("output2")
+    public String output2(ModelMap model){
+        model.addAttribute("msg","hello,Springmvc");
+        return "output";
+    }
+
+    @RequestMapping("output3")
+    public String output1(Map map){
+        map.put("msg","hello,Springmvc");
+        return "output";
+    }
+}
+当使用此方式进行设置之后，会发现所有的参数值都设置到了request作用域中
+
+5、使用ModelAndView对象传输数据到页面
+@Controller
+public class OutputController {
+
+    @RequestMapping("mv")
+    public ModelAndView mv(){
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("output");
+        mv.addObject("msg","hello.modelAndView");
+        return mv;
+    }
+}
+发现当使用modelAndView对象的时候，返回值的类型也是此对象，可以将要跳转的页面设置成view的名称，来完成跳转的功能，同时数据也是放到request作用中
+
+6、使用session传输数据到页面
+@SessionAttribute：此注解可以表示，当向request作用域设置数据的时候同时也要向session中保存一份,此注解有两个参数，一个value（表示将哪些值设置到session中），另外一个type（表示按照类型来设置数据，一般不用，因为有可能会将很多数据都设置到session中，导致session异常）。
+Controller
+@SessionAttributes(value = "msg")
+public class OutputController {
+
+    @RequestMapping("output1")
+    public String output1(Model model){
+        model.addAttribute("msg","hello,Springmvc");
+        System.out.println(model.getClass());
+        return "output";
+    }
+}
