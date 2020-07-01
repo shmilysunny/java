@@ -297,7 +297,7 @@ public class UserController {
     }
 }
 4、使用Model，Map，ModelMap传输数据到页面
-在方法的参数上传入Model，ModelMap,Map类型，此时都能够将数据传送回页面,Model和ModelMap都继承自Map
+在方法的参数上传入Model，ModelMap,Map类型，此时都能够将数据传送回页面,Model和ModelMap都继承自Map     BindingAwareModelMap
 @Controller
 public class OutputController {
 
