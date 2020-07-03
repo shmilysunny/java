@@ -1,0 +1,166 @@
+1、SpringMVC的返回JSON数据
+使用@ResponseBody注解保证返回的数据的是json格式
+ <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.10.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.10.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.10.3</version>
+        </dependency>
+				
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <context:component-scan base-package="com.study"></context:component-scan>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/page/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+    <mvc:default-servlet-handler></mvc:default-servlet-handler>
+    <mvc:annotation-driven></mvc:annotation-driven>
+</beans>
+
+@Controller
+public class JsonController {
+
+    @ResponseBody
+    @RequestMapping("/json")
+    public List<User> json(){
+        List<User> list = new ArrayList<User>();
+        list.add(new User(1,"zhangsan",12,"男",new Date(),"1234@qq.com"));
+        list.add(new User(2,"zhangsan2",12,"男",new Date(),"1234@qq.com"));
+        list.add(new User(3,"zhangsan3",12,"男",new Date(),"1234@qq.com"));
+        return list;
+    }
+}
+
+2、使用@RequestBody获取请求体信息
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<%
+    pageContext.setAttribute("ctp",request.getContextPath());
+%>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<form action="${ctp}/testRequestBody" method="post">
+    <input name="username" value="zhangsan"><br>
+    <input name="password" value="123456"><br>
+    <input type="file" name="file" ><br>
+    <input type="submit"><br>
+</form>
+</body>
+</html>
+
+@Controller
+public class OtherController {
+
+    @RequestMapping("/testRequestBody")
+    public String testRequestBody(@RequestBody String body){
+        System.out.println("请求体："+body);
+        return "success";
+    }
+}
+同时@RequestBody能够接受json格式的请求数据
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<script type="text/javascript" src="script/jquery-1.9.1.min.js"></script>
+<html>
+<%
+    pageContext.setAttribute("ctp",request.getContextPath());
+%>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<a href="${ctp}/testRequestJson">发送json数据</a>
+<script type="text/javascript">
+    $("a:first").click(function () {
+        var user = {id:"1",name:"zhangsan",age:"12",gender:"男",birth:"2020-3-13",email:"123@qq.com"};
+        var userJson = JSON.stringify(user);
+       $.ajax({
+           url:"${ctp}/testRequestJson",
+           type:"POST",
+           data:userJson,
+           contentType:"application/json",
+           success:function (data) {
+               alert(data);
+           }
+       });
+       return false;
+    });
+</script>
+</body>
+</html>
+
+@Controller
+public class OtherController {
+    @RequestMapping("/testRequestJson")
+    public String testRequestBody(@RequestBody User user){
+        System.out.println("对象："+user);
+        return "success";
+    }
+}
+
+3、在接受请求的时候还可以使用HttpEntity对象，用来接受form提交的参数，可以获取请求头信息
+@Controller
+public class OtherController {
+
+    @RequestMapping("/testHttpEntity")
+    public String testRequestBody(HttpEntity<String> httpEntity){
+        System.out.println(httpEntity);
+        return "success";
+    }
+}
+
+4、使用RespsonseEntity可以用来定制响应内容
+@Controller
+public class OtherController {
+
+    @RequestMapping("/testResponseEntity")
+    public ResponseEntity<String> testResponseEntity(){
+
+        String body = "<h1>hello</h1>";
+        MultiValueMap<String,String> header = new HttpHeaders();
+        header.add("Set-Cookie","name=zhangsan");
+        return  new ResponseEntity<String>(body,header, HttpStatus.OK);
+    }
+}
+
+5、文件下载
+@Controller
+public class OtherController {
+
+    @RequestMapping("/download")
+    public ResponseEntity<byte[]> download(HttpServletRequest request) throws Exception {
+        //获取要下载文件的路径及输入流对象
+        ServletContext servletContext = request.getServletContext();
+        String realPath = servletContext.getRealPath("/script/jquery-1.9.1.min.js");
+        FileInputStream fileInputStream = new FileInputStream(realPath);
+
+        byte[] bytes = new byte[fileInputStream.available()];
+        fileInputStream.read(bytes);
+        fileInputStream.close();
+        //将要下载文件内容返回
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Content-Disposition","attachment;filename=jquery-1.9.1.min.js");
+        return  new ResponseEntity<byte[]>(bytes,httpHeaders,HttpStatus.OK);
+    }
+}
