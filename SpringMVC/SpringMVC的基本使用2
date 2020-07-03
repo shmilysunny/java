@@ -557,3 +557,116 @@ hello springmvc
 但是加上此配置之后，大家又发现此时除了静态资源无法访问之外，我们正常的请求也无法获取了，因此还需要再添加另外的配置：
 <!--保证静态资源和动态请求都能够访问-->
 <mvc:annotation-driven></mvc:annotation-driven>
+
+（2）自定义视图解析器
+@Controller
+public class MyViewController {
+
+    @RequestMapping("/myview")
+    public String myView(){
+        return "study:/index";
+    }
+}
+public class MyViewResolver implements ViewResolver, Ordered {
+    private int order = 0;
+    public View resolveViewName(String viewName, Locale locale) throws Exception {
+
+        if (viewName.startsWith("study:")){
+            System.out.println("study:");
+            return new MyView();
+        }else{
+            //如果不是，则直接返回null
+            return null;
+        }
+    }
+
+    public int getOrder() {
+        return this.order;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
+    }
+}
+public class MyView implements View {
+
+    public void render(Map<String, ?> model, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        response.setContentType("text/html");
+        response.getWriter().write("hello");
+    }
+
+    /**
+     * 返回数据内容的类型
+     * @return
+     */
+    public String getContentType() {
+        return "text/html";
+    }
+}
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="com.study"></context:component-scan>
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/page/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+    <bean class="com.mashibing.view.MyViewResolver">
+        <property name="order" value="1"></property>
+    </bean>
+</beans>
+
+（3）自定义类型转换器
+@Component
+public class MyConverter implements Converter<String, User> {
+    public User convert(String source) {
+        User user = null;
+        String[] split = source.split("-");
+        if (source!=null && split.length==4){
+            user = new User();
+            user.setId(Integer.parseInt(split[0]));
+            user.setName(split[1]);
+            user.setAge(Integer.parseInt(split[2]));
+            user.setGender(split[3]);
+        }
+        return user;
+    }
+}
+@Controller
+public class UserController {
+
+    @RequestMapping("/user")
+    public String add(User user){
+        System.out.println(user);
+        return "success";
+    }
+}
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <context:component-scan base-package="com.mashibing"></context:component-scan>
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/page/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+    
+		<mvc:annotation-driven conversion-service="conversionService"></mvc:annotation-driven>
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <ref bean="myConverter"></ref>
+            </set>
+        </property>
+    </bean>
+</beans>
