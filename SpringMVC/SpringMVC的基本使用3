@@ -164,3 +164,144 @@ public class OtherController {
         return  new ResponseEntity<byte[]>(bytes,httpHeaders,HttpStatus.OK);
     }
 }
+
+6、文件上传
+Spring MVC 为文件上传提供了直接的支持，这种支持是通过即插即用的 MultipartResolver 实现的。Spring 用 Jakarta Commons FileUpload 技术实现了一个 MultipartResolver 实现类：CommonsMultipartResovler
+Spring MVC 上下文中默认没有装配 MultipartResovler，因此默认情况下不能处理文件的上传工作，如果想使用 Spring 的文件上传功能，需现在上下文中配置 MultipartResolver。
+<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+<dependency>
+		<groupId>commons-io</groupId>
+		<artifactId>commons-io</artifactId>
+		<version>2.6</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
+<dependency>
+		<groupId>commons-fileupload</groupId>
+		<artifactId>commons-fileupload</artifactId>
+		<version>1.4</version>
+</dependency>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    <mvc:default-servlet-handler></mvc:default-servlet-handler>
+    <mvc:annotation-driven></mvc:annotation-driven>
+    <context:component-scan base-package="com.mashibing"></context:component-scan>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/page/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8"></property>
+        <property name="maxUploadSize" value="1024000"></property>
+    </bean>
+</beans>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+  <head>
+    <title>$Title$</title>
+  </head>
+  <body>
+  <form action="testUpload" method="post" enctype="multipart/form-data">
+    文件: <input type="file" name="file"/><br><br>
+    文件: <input type="file" name="file"/><br><br>
+    文件: <input type="file" name="file"/><br><br>
+    描述: <input type="text" name="desc"/><br><br>
+    <input type="submit" value="提交"/>
+  </form>
+  </body>
+</html>
+
+@Controller
+public class UploadHandler {
+
+    @RequestMapping(value = "/testUpload", method = RequestMethod.POST)
+    public String testUpload(@RequestParam(value = "desc", required = false) String desc, @RequestParam("file") MultipartFile[] multipartFile) throws IOException {
+        System.out.println("desc : " + desc);
+        for (MultipartFile file : multipartFile) {
+            if (!file.isEmpty()) {
+                System.out.println("OriginalFilename : " + file.getOriginalFilename());
+                file.transferTo(new File("D:\\file\\" + file.getOriginalFilename()));
+            }
+        }
+        return "success"; //增加成功页面: /views/success.jsp
+    }
+}
+
+7、Springmvc拦截器
+SpringMVC提供了拦截器机制，允许运行目标方法之前进行一些拦截工作或者目标方法运行之后进行一下其他相关的处理。自定义的拦截器必须实现HandlerInterceptor接口
+preHandle()：这个方法在业务处理器处理请求之前被调用，在该方法中对用户请求 request 进行处理。如果程序员决定该拦截器对请求进行拦截处理后还要调用其他的拦截器，或者是业务处理器去进行处理，则返回true；如果程序员决定不需要再调用其他的组件去处理请求，则返回false
+postHandle()：这个方法在业务处理器处理完请求后，但是DispatcherServlet 向客户端返回响应前被调用，在该方法中对用户请求request进行处理。
+afterCompletion()：这个方法在DispatcherServlet完全处理完请求后被调用，可以在该方法中进行一些资源清理的操作。
+
+public class MyFirstInterceptor implements HandlerInterceptor {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println(this.getClass().getName()+"------->preHandle");
+        return true;
+    }
+
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        System.out.println(this.getClass().getName()+"------->postHandle");
+    }
+
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        System.out.println(this.getClass().getName()+"------->afterCompletion");
+    }
+}
+
+@Controller
+public class TestInterceptorController {
+
+    @RequestMapping("test01")
+    public String test01(){
+        System.out.println("test01");
+        return "success";
+    }
+}
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    <mvc:default-servlet-handler></mvc:default-servlet-handler>
+    <mvc:annotation-driven></mvc:annotation-driven>
+    <context:component-scan base-package="com.mashibing"></context:component-scan>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/page/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+    <mvc:interceptors>
+        <bean class="com.mashibing.interceptor.MyFirstInterceptor"></bean>
+    </mvc:interceptors>
+</beans>
+
+拦截器的执行顺序如下：
+reHandle方法----》执行目标方法----》执行拦截器的postHandle方法----》执行页面跳转----》执行拦截器的afterCompletion方法
+在配置拦截器的时候有两个需要注意的点：
+1、如果prehandle方法返回值 为false，那么意味着不放行，那么就会造成后续的所有操作都中断
+2、如果执行到方法中出现异常，那么后续流程不会处理但是afterCompletion方法会执行
+
+多个拦截器执行顺序如下：
+谁先执行取决于配置的顺序
+拦截器的preHandle是按照顺序执行的
+拦截器的postHandle是按照逆序执行的
+拦截器的afterCompletion是按照逆序执行的
+如果执行的时候核心的业务代码出问题了，那么已经通过的拦截器的afterCompletion会接着执行
+
+8、拦截器跟过滤器的区别
+​ 1、过滤器是基于函数回调的，而拦截器是基于java反射的
+​ 2、过滤器依赖于servlet容器，而拦截器不依赖Servlet容器
+​ 3、过滤器几乎对所有的请求都起作用和，而拦截器只能对action请求起作用
+​ 4、拦截器可以访问action的上下文，而过滤器不可以
+​ 5、在action的生命周期中，拦截器可以多次调用，而过滤器只能在容器初始化的时候调用一次
