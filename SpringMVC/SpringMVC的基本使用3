@@ -305,3 +305,76 @@ reHandle方法----》执行目标方法----》执行拦截器的postHandle方法
 ​ 3、过滤器几乎对所有的请求都起作用和，而拦截器只能对action请求起作用
 ​ 4、拦截器可以访问action的上下文，而过滤器不可以
 ​ 5、在action的生命周期中，拦截器可以多次调用，而过滤器只能在容器初始化的时候调用一次
+
+9、SpringMVC的国际化操作
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+  <head>
+    <title>$Title$</title>
+  </head>
+  <body>
+  <a href="i18n">国际化页面登录</a>
+  </body>
+</html>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<h1><fmt:message key="welcomeinfo"/></h1>
+<form action="login" method="post" >
+    <fmt:message key="username"/>: <input type="text" name="username"/><br><br>
+    <fmt:message key="password"/>: <input type="password" name="password"/><br><br>
+    <input type="submit" value="<fmt:message key="loginBtn"/>"/>
+</form>
+</body>
+</html>
+
+@Controller
+public class I18nController {
+
+    @RequestMapping("i18n")
+    public String i18n(){
+        return "login";
+    }
+}
+
+login_en_US.properties
+welcomeinfo=welcome to mashibing.com
+username=USERNAME
+password=PASSWORD
+loginBtn=LOGIN
+
+login_zh_CN.properties
+welcomeinfo=欢迎进入马士兵教育
+username=用户名
+password=密码
+loginBtn=登录
+
+<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+	<property name="basename" value="login"></property>
+</bean>
+
+SpringMVC中国际化的处理非常简单，就是按照浏览器所带来的语言信息决定的。
+Locale locale = request.getLocale();//获取浏览器的区域信息
+在DispatcherServlet中会包含一个组件，用来专门获取区域信息，默认调用的是org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver类
+在程序中可以获取Locale的相关信息：
+@Controller
+public class I18nController {
+
+    @Autowired
+    private MessageSource messageSource;
+
+    @RequestMapping("i18n")
+    public String i18n(Locale locale){
+        System.out.println(locale);
+        String username = messageSource.getMessage("username", null, locale);
+        System.out.println(username);
+        return "login";
+    }
+}
+
+10、通过超链接来切换国际化
