@@ -378,3 +378,264 @@ public class I18nController {
 }
 
 10、通过超链接来切换国际化
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<form action="login" method="post" >
+    <a href="i18n?locale=zh_CN">中文</a><a href="i18n?locale=en_US">英文</a>
+</form>
+</body>
+</html>
+
+public class MyLocaleResolver implements LocaleResolver {
+    /**
+     * 解析并返回locale
+     * @param request
+     * @return
+     */
+    @Override
+    public Locale resolveLocale(HttpServletRequest request) {
+        Locale locale = null;
+        String localeStr = request.getParameter("locale");
+        if(localeStr!=null && ! "".equals(localeStr)){
+            locale = new Locale(localeStr.split("_")[0],localeStr.split("_")[1]);
+        }else{
+            locale = request.getLocale();
+        }
+        return locale;
+    }
+
+    /**
+     * 不支持设置locale的信息
+     * @param request
+     * @param response
+     * @param locale
+     */
+    @Override
+    public void setLocale(HttpServletRequest request, HttpServletResponse response, Locale locale) {
+        throw new UnsupportedOperationException(
+                "Cannot change HTTP accept header - use a different locale resolution strategy");
+    }
+}
+
+ <!--配置区域信息解析器-->
+<bean id="localeResolver" class="com.mashibing.MyLocaleResolver"></bean>
+
+除了可以自定义区域信息解析器之外，我们还可以使用SpringMVC中自带的SessionLocaleResolver:
+@Controller
+public class I18nController {
+
+    @Autowired
+    private MessageSource messageSource;
+
+    @RequestMapping("i18n")
+    public String i18n(@RequestParam(value = "locale",defaultValue = "zh_CN") String localeStr,Locale locale, HttpSession session){
+
+        Locale l = null;
+        if(localeStr!=null && ! "".equals(localeStr)){
+            l = new Locale(localeStr.split("_")[0],localeStr.split("_")[1]);
+        }else{
+            l = locale;
+        }
+        session.setAttribute(SessionLocaleResolver.class.getName() + ".LOCALE",l);
+        return "login";
+    }
+}
+
+   <!--配置区域信息解析器-->
+<!--    <bean id="localeResolver" class="com.mashibing.MyLocaleResolver"></bean>-->
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver"></bean>
+		
+使用LocaleChangeInterceptor来实现国际化：
+<!--配置区域信息解析器-->
+<!--    <bean id="localeResolver" class="com.mashibing.MyLocaleResolver"></bean>-->
+<bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver"></bean>
+    <mvc:interceptors>
+        <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"></bean>
+    </mvc:interceptors>
+
+@Controller
+public class I18nController {
+
+    @Autowired
+    private MessageSource messageSource;
+
+    @RequestMapping("i18n")
+    public String i18n(){
+        return "login";
+    }
+}
+
+11、SpringMVC异常处理机制
+在SpringMVC中拥有一套非常强大的异常处理机制，SpringMVC通过HandlerExceptionResolver处理程序的异常，包括请求映射，数据绑定以及目标方法的执行时发生的异常。
+在容器启动好，进入DispatcherServlet之后，会对HandlerExceptionResolver进行初始化操作
+会默认的从DispatcherServlet.properties中找到对应的异常处理类
+#默认的处理类
+org.springframework.web.servlet.HandlerExceptionResolver=
+#处理@ExceptionHandler
+org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver,\
+#处理@ResponseStatus，给自定义异常使用
+org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver,\
+#判断是否是SpringMVC自带异常
+org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver
+
+自己定义异常处理方式：
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+  <head>
+    <title>$Title$</title>
+  </head>
+  <body>
+<a href="exception1">自己处理异常</a>
+  </body>
+</html>
+
+@Controller
+public class ExceptionController {
+
+    @RequestMapping("exception1")
+    public String exception(){
+        System.out.println("exception.......");
+        System.out.println(10/0);
+        return "success";
+    }
+
+    @ExceptionHandler(value = {ArithmeticException.class})
+    public ModelAndView handlerException(Exception exception){
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("error");
+        mv.addObject("ex",exception);
+        return mv;
+    }
+}
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+我的出错页面：
+错误信息：${ex}
+</body>
+</html>
+
+	在一个类中可能会包含多个异常的处理方法，在不同的方法上可以使用不同范围的异常，在查找的时候会优先调用范围小的异常处理
+	@Controller
+public class ExceptionController {
+
+    @RequestMapping("exception1")
+    public String exception(){
+        System.out.println("exception.......");
+        System.out.println(10/0);
+        return "success";
+    }
+
+    @ExceptionHandler(value = {ArithmeticException.class})
+    public ModelAndView handlerException1(Exception exception){
+        System.out.println("handlerException1........");
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("error");
+        mv.addObject("ex",exception);
+        return mv;
+    }
+
+    @ExceptionHandler(value = {Exception.class})
+    public ModelAndView handlerException2(Exception exception){
+        System.out.println("handlerException2........");
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("error");
+        mv.addObject("ex",exception);
+        return mv;
+    }
+}
+
+在不同的类中可能会包含不同的异常处理，因此我们需要定义一个全局的异常控制器,使用@ControllerAdvice注解标注，如果本类跟全局都有相关异常的处理，那么会优先使用本类的
+@ControllerAdvice
+public class MyGlobalExceptionHandler {
+    @ExceptionHandler(value = {ArithmeticException.class})
+    public ModelAndView handlerException1(Exception exception){
+        System.out.println("handlerException1........");
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("error");
+        mv.addObject("ex",exception);
+        return mv;
+    }
+}
+
+@ResponseStatus的使用
+	@ResponseStatus可以标注到方法上，但是标注在方法之后可能导致该方法无法被访问，因此更多的是在自定义类上
+	@Controller
+public class ExceptionController {
+
+    @ResponseStatus(reason = "不知道什么原因，反正错误",value = HttpStatus.NOT_ACCEPTABLE)
+    @RequestMapping("exception1")
+    public String exception(){
+        System.out.println("exception.......");
+        return "success";
+    }
+}
+
+@ResponseStatus作用在类上
+@ResponseStatus(reason = "名字不是admin",value = HttpStatus.NOT_ACCEPTABLE)
+public class UserNameException extends RuntimeException {
+}
+
+@Controller
+public class ExceptionController {
+    @RequestMapping("exception1")
+    public String exception(){
+        System.out.println("exception.......");
+        return "success";
+    }
+    @RequestMapping("exception2")
+    public String exception2(String username){
+        System.out.println("exception2222.......");
+        if ("admin".equals(username)){
+            return "success";
+        }else{
+            throw new UserNameException();
+        }
+    }
+}
+
+springmvc自定义的异常：
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+  <head>
+    <title>$Title$</title>
+  </head>
+  <body>
+<a href="exception1">自己处理异常</a>
+<a href="exception2?username=zhangsan">自定义异常处理</a>
+<a href="exception3">Springmvc自己异常处理</a>
+  </body>
+</html>
+
+@Controller
+public class ExceptionController {
+
+    @RequestMapping("exception1")
+    public String exception(){
+        System.out.println("exception.......");
+        return "success";
+    }
+    @RequestMapping("exception2")
+    public String exception2(String username){
+        System.out.println("exception2222.......");
+        if ("admin".equals(username)){
+            return "success";
+        }else{
+            throw new UserNameException();
+        }
+    }
+
+    @RequestMapping(value = "exception3",method = RequestMethod.POST)
+    public String exception3(String username){
+        System.out.println("exception3.......");
+            return "success";
+    }
+}
