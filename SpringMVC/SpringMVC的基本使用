@@ -1,3 +1,15 @@
+servlet基本知识
+url-pattern标签的配置方式有四种（四种方式的优先级是由高到低如下顺序）：
+完全匹配（/myServlet）
+目录匹配（/*）
+扩展名匹配（*.do, *.jsp）
+默认匹配（/）
+/.jsp 由jspServlet处理
+/ 有DefaultServlet处理
+所以url-pattern不配置/* 配置/*时发送.jsp请求会报错，原因是拦截了jsp请求，但是又不能处理jsp请求
+
+web.xml中标签的加载顺序是context-param->listener->filter->servlet
+
 ![image](https://github.com/shmilysunny/java/blob/master/SpringMVC/springmvc%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B.jpg)
 1、DispatcherServlet表示前置控制器，是整个SpringMVC的控制中心。用户发出请求，DispatcherServlet接收请求并拦截请求。
 2、HandlerMapping为处理器映射。DispatcherServlet调用HandlerMapping,HandlerMapping根据请求url查找Handler。
