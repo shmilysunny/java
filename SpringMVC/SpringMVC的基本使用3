@@ -639,3 +639,13 @@ public class ExceptionController {
             return "success";
     }
 }
+
+12、跨域
+解决方案：1、JS 2、JSONP 3、CORS
+JSONP只能解决GET请求方式
+CORS：
+Spring4.X以下
+1.cookie提交
+2.cookie不提交
+Spring4.X以上
+配置文件中设置mvc：cors
