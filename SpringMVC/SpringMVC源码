@@ -1,0 +1,19 @@
+DispatcherServlet如何与三大组件进行联系
+处理器映射器(注解方式的处理器映射器是RequestMappingHandlerMapping 根据@RequestMapping注解查找处理器(HandlerMethod))与DispatcherServlet交互的代码：getHandler方法
+处理器适配器与DispatcherServlet交互的代码：getHandlerAdapter方法
+试图解析器与DispatcherServlet交互的代码：1.processDispatcherServlet方法
+
+
+spring中bean的创建分为三步：
+1，创建bean对象（调用构造方法）
+2，填充属性（依赖注入）
+3，调用初始化方法
+
+循环依赖：
+构造器循环依赖（无法解决），出现在第一步
+setter方法循环依赖（单例情况下可以解决），出现在第二步，通过三级缓存解决
+
+一级缓存singletonObjects:存储三步创建之后的bean
+二级缓存earlySingletonObjects:存储创建中的bean
+三级缓存singletonFactories:存储创建中的bean
+一级缓存没有找二级缓存和三级缓存:DefaultSingletonRegistry:getSingleton方法
