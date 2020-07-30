@@ -32,4 +32,5 @@ web.xml
 <servlet>DispatcherServlet
 <context-param>中配置<param-value> classpath:applicationContext-*.xml
 上下文监听器<listener>ContextLoaderListener加载
-乱码过滤器<filter>CharacterEncodingFilter
+乱码过滤器<filter>CharacterEncodingFilter(可选)
+REST过滤器<filter>HiddenHttpMethodFilter(可选)
