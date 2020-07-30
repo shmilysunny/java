@@ -30,6 +30,6 @@ servlet-api
 
 web.xml
 <servlet>DispatcherServlet
-<context-param>中配置<param-value>
+<context-param>中配置<param-value> classpath:applicationContext-*.xml
 上下文监听器<listener>ContextLoaderListener加载
 乱码过滤器<filter>CharacterEncodingFilter
