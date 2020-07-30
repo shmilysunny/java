@@ -1,0 +1,35 @@
+依赖包
+Spring(包括Springmvc)
+mybatis
+mybatis-spring整合包
+数据库驱动
+第三方连接池
+JSTL
+servlet-api
+
+
+配置文件
+表现层-springmvc.xml                                子容器      DispatcherServlet加载
+       --Controller
+       --三大组件
+业务层-applicationContext-service.xml               父容器      ContextLoaderListener加载
+       --Service实现类
+     -applicationContext-tx.xml                    父容器
+       --AOP代理对象
+       --TxAdvice
+       --TransactionManager
+持久层-applicationContext-dao.xml                   父容器
+       --DataSource
+       --SqlSessionFactory
+       --Mapper代理对象
+       
+
+子容器可以使用父容器的bean，但是父容器不能使用子容器的bean
+例如：context:property-placeholder子容器配置完后 父容器如果要用需要重新配置
+
+
+web.xml
+<servlet>DispatcherServlet
+<context-param>中配置<param-value>
+上下文监听器<listener>ContextLoaderListener加载
+乱码过滤器<filter>CharacterEncodingFilter
