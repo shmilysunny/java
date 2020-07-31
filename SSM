@@ -63,6 +63,16 @@ REST过滤器<filter>HiddenHttpMethodFilter(可选)
             <artifactId>spring-context</artifactId>
             <version>5.2.3.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>5.2.3.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>5.2.3.RELEASE</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/cglib/cglib -->
         <dependency>
             <groupId>cglib</groupId>
@@ -209,7 +219,7 @@ web.xml
     
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:classpath:applicationContext-*.xml</param-value>
+        <param-value>classpath:applicationContext-*.xml</param-value>
     </context-param>
     
     <listener>
