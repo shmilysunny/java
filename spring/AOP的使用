@@ -604,6 +604,101 @@ public class MyTest {
         mulService.mulTx();
     }
 }
+
+如果外部异常,required和外部同一事务，所以REQUIRED回滚，REQUIRED_NEW的不回滚
+例：
+BookService.java
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void checkout(String username,int id) {
+        bookDao.updateStock(id);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED_NEW)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+   }
+}
+MulService.java
+@Service
+public class MulService {
+
+    @Autowired
+    private BookService bookService;
+
+    @Transactional
+    public void mulTx(){
+        bookService.checkout("zhangsan",1);
+        bookService.updatePrice(1,1000);
+        int i = 1/0;
+    }
+}
+MyTest.java
+public class MyTest {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("jdbcTemplate.xml");
+        MulService mulService = context.getBean("mulService", MulService.class);
+        mulService.mulTx();
+    }
+}
+
+如果内部异常,内部required和外部同一事务，由于内部异常，外部也属于异常，所以REQUIRED的回滚，REQUIRED_NEW的本身就异常也回滚
+例：
+BookService.java
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void checkout(String username,int id) {
+        bookDao.updateStock(id);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED_NEW)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+        int i = 1/0;
+   }
+}
+MulService.java
+@Service
+public class MulService {
+
+    @Autowired
+    private BookService bookService;
+
+    @Transactional
+    public void mulTx(){
+        bookService.checkout("zhangsan",1);
+        bookService.updatePrice(1,1000);
+    }
+}
+MyTest.java
+public class MyTest {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("jdbcTemplate.xml");
+        MulService mulService = context.getBean("mulService", MulService.class);
+        mulService.mulTx();
+    }
+}
+
 通过修改checkout方法的传播特性为Required_new,发现价格进行了回滚，而其他的数据没有进行回滚
 例
 @Service
@@ -631,6 +726,7 @@ public class BookService {
         int i = 1/0;
     }
 }
+
 将bookservice方法的传播行为为Required，并且将报错设置在MulService中，发现会都进行回滚
 例：
 @Service
@@ -670,6 +766,7 @@ public class MulService {
         int i = 1/0;
     }
 }
+
 将bookservice方法的传播行为为Requires_new，并且将报错设置在MulService中，发现都不会进行回滚
 例：
 @Service
@@ -709,6 +806,141 @@ public class MulService {
         int i = 1/0;
     }
 }
+
+
+如果在外部捕获异常，Required的也会回滚
+例：
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void checkout(String username,int id) {
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+        int i = 1/0;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+    }
+}
+@Service
+public class MulService {
+
+    @Autowired
+    private BookService bookService;
+
+    @Transactional
+    public void mulTx(){
+        try {
+            bookService.checkout("zhangsan",1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        bookService.updatePrice(1,1000);
+    }
+}
+
+如果在外部捕获异常，Requires_new的有异常会回滚(NESTED和此种情况一致)，Required的不会回滚
+例：
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void checkout(String username,int id) {
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+        int i = 1/0;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+    }
+}
+@Service
+public class MulService {
+
+    @Autowired
+    private BookService bookService;
+
+    @Transactional
+    public void mulTx(){
+        try {
+            bookService.checkout("zhangsan",1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        bookService.updatePrice(1,1000);
+    }
+}
+
+如果外部异常，Requires_new的不会回滚(Nested会回滚)，Required的会回滚
+例：
+@Service
+public class BookService {
+
+    @Autowired
+    BookDao bookDao;
+
+    /**
+     * 结账：传入哪个用户买了哪本书
+     * @param username
+     * @param id
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void checkout(String username,int id) {
+
+        bookDao.updateStock(id);
+        int price = bookDao.getPrice(id);
+        bookDao.updateBalance(username,price);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updatePrice(int id,int price){
+        bookDao.updatePrice(id,price);
+    }
+}
+@Service
+public class MulService {
+
+    @Autowired
+    private BookService bookService;
+
+    @Transactional
+    public void mulTx(){
+        try {
+            bookService.checkout("zhangsan",1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        bookService.updatePrice(1,1000);
+        int i = 1/0;
+    }
+}
+
+
 如果在bookservice执行的话，会发现刚刚的效果就没有了，原因是外层调用的时候使用的AOP，但是本类方法自己的调用就是最最普通的调用，就是同一个事务
 例：
 @Service
@@ -747,7 +979,7 @@ public class BookService {
 2、是REQUIRES_NEW，如果内部异常，外部其他代码不会rollback；如果外部异常，不会导致内部回滚
 3、是NESTED，如果内部异常，并且被捕获，外部其他代码不会rollback；如果外部异常，并且没有捕获，会导致内部回滚
 4、是SUPPORTS,如果外部有事务则执行事务，如果外部没有事务则内部不执行事务
-5、是NOT_SUPPORTED,当前方法不应该运行在事务中，如果有运行的事务，将它挂起
+5、是NOT_SUPPORTED,当前方法不应该运行在事务中，如果有运行的事务，将它挂起(就是不走事务)
 6、是NEVER,当前方法不应该运行在事务中，如果外部有运行的事务，将抛出异常
 7、是MANDATORY,当前方法必须运行在事务内部，如果外部没有运行的事务，将抛出异常
 PROPAGATION_REQUIRES_NEW 启动一个新的, 不依赖于环境的 "内部" 事务. 这个事务将被完全 commited 或 rollback 而不依赖于外部事务, 它拥有自己的隔离范围, 自己的锁, 等等. 当内部事务开始执行时, 外部事务将被挂起, 内务事务结束时, 外部事务将继续执行. 
