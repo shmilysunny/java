@@ -1,0 +1,2 @@
+如何切换环境
+   application.properties/yaml:spring.profiles.active=XXX
