@@ -1,0 +1,108 @@
+
+class Msg {
+    String name;
+    String msg;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    @Override
+    public String toString() {
+        return "Msg{" +
+                "name='" + name + '\'' +
+                ", msg='" + msg + '\'' +
+                '}';
+    }
+}
+
+
+interface Filter {
+    boolean doFilter(Msg m);
+}
+
+class HtmlFilter implements Filter {
+
+    @Override
+    public boolean doFilter(Msg m) {
+        String r = m.getMsg();
+        r = r.replaceAll("<", "[");
+        r = r.replaceAll(">", "]");
+        m.setMsg(r);
+        System.out.println("m1:Filter1");
+        return true;
+    }
+}
+
+class SenssiFilter implements Filter {
+
+    @Override
+    public boolean doFilter(Msg m) {
+        String r = m.getMsg();
+        r = r.replaceAll("996", "955");
+        m.setMsg(r);
+        System.out.println("m1:Filter2");
+        return false; // 不会继续走下一个filter
+    }
+}
+
+class FaceFilter implements Filter {
+
+    @Override
+    public boolean doFilter(Msg m) {
+        String r = m.getMsg();
+        r = r.replaceAll("script", "hello");
+        m.setMsg(r);
+        System.out.println("m1:Filter3");
+        return true;
+    }
+}
+
+class FilterChain implements Filter {
+
+    List<Filter> filters = new ArrayList<>();
+
+    FilterChain add(Filter f) {
+        filters.add(f);
+        return this;
+    }
+
+    @Override
+    public boolean doFilter(Msg m) {
+        for (Filter f : filters) {
+            if (!f.doFilter(m)) return false;
+        }
+        return true;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Msg msg = new Msg();
+        msg.setMsg("<script>welcome to 996");
+
+        FilterChain fc = new FilterChain();
+        fc.add(new HtmlFilter())
+                .add(new SenssiFilter());
+
+        FilterChain fc2 = new FilterChain();
+        fc2.add(new FaceFilter());
+        fc.add(fc2);
+
+        fc.doFilter(msg);
+
+        System.out.println(msg);
+    }
+}
