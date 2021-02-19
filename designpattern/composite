@@ -1,0 +1,72 @@
+组合模式
+
+abstract class Node {
+    abstract void P();
+}
+
+class LeafNode extends Node {
+    String content;
+
+    public LeafNode(String content) {
+        this.content = content;
+    }
+
+    @Override
+    void P() {
+        System.out.println(content);
+    }
+}
+
+class BranchNode extends Node {
+    String name;
+    public BranchNode(String name) {
+        this.name = name;
+    }
+
+    List<Node> nodes = new ArrayList<>();
+    public void add(Node node) {
+        nodes.add(node);
+    }
+
+    @Override
+    void P() {
+        System.out.println(name);
+    }
+}
+public class Main {
+
+    public static void main(String[] args) {
+        BranchNode root = new BranchNode("root");
+        BranchNode folder1 = new BranchNode("folder1");
+        BranchNode folder2 = new BranchNode("folder2");
+        LeafNode leaf = new LeafNode("propertities");
+
+        LeafNode f1Leaf = new LeafNode("f1Leaf");
+        BranchNode f2Branch = new BranchNode("f2Branch");
+
+        LeafNode f2BranchLeaf = new LeafNode("f2BranchLeaf");
+
+        root.add(folder1);
+        root.add(folder2);
+        root.add(leaf);
+
+        folder1.add(f1Leaf);
+        folder2.add(f2Branch);
+        f2Branch.add(f2BranchLeaf);
+
+        tree(root, 0);
+    }
+
+    private static void tree(Node node, int deep) {
+        for (int i = 0; i < deep; i++) {
+            System.out.print("--");
+        }
+        node.P();
+
+        if (node instanceof BranchNode) {
+            for (Node n:((BranchNode) node).nodes) {
+                tree(n, deep + 1);
+            }
+        }
+    }
+}
