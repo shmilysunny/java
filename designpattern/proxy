@@ -1,4 +1,4 @@
-JDK自带
+JDK自带，缺点是必须有接口
 public class Main {
     public static void main(String[] args) {
         Tank t = new Tank();
@@ -30,7 +30,7 @@ class Tank implements Movable {
     }
 }
 
-cglib
+cglib，缺点：生成的动态代理类是代理类的子类(Tank的子类),所以如果代理类(Tank)是final的，则无法被继承，也就无法生成动态代理类
 public class CGLIBMain {
     public static void main(String[] args) {
         Enhancer enhancer = new Enhancer();
