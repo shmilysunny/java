@@ -1,0 +1,60 @@
+JDK自带
+public class Main {
+    public static void main(String[] args) {
+        Tank t = new Tank();
+        Movable m = (Movable) Proxy.newProxyInstance(Tank.class.getClassLoader(), t.getClass().getInterfaces(), new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                System.out.println("start moving....");
+                method.invoke(t);
+                System.out.println("end moving");
+                return null;
+            }
+        });
+        m.move();
+    }
+}
+
+interface Movable {
+    void move();
+}
+
+class Tank implements Movable {
+    public void move() {
+        System.out.println("tank moving.....");
+        try {
+            Thread.sleep(new Random().nextInt(1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+cglib
+public class CGLIBMain {
+    public static void main(String[] args) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(Tank.class);
+        enhancer.setCallback(new MethodInterceptor() {
+            @Override
+            public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+                System.out.println("start moving");
+                methodProxy.invokeSuper(o, objects);
+                System.out.println("end moving");
+                return null;
+            }
+        });
+        Tank tank = (Tank) enhancer.create();
+        tank.move();
+    }
+}
+class Tank {
+    public void move() {
+        System.out.println("tank moving.....");
+        try {
+            Thread.sleep(new Random().nextInt(1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
