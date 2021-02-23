@@ -1,0 +1,39 @@
+public class MM {
+    String name;
+}
+
+public class GiftImpl {
+}
+
+public class Book extends GiftImpl {
+}
+
+public class Flower extends GiftImpl {
+}
+
+public abstract class Gift {
+    GiftImpl giftImpl;
+}
+
+public class WarmGift extends Gift {
+    public WarmGift(GiftImpl gift) {
+        this.giftImpl = gift;
+    }
+}
+
+public class WildGift extends Gift {
+    public WildGift(GiftImpl gift) {
+        this.giftImpl = gift;
+    }
+}
+
+public class GG {
+    public void chase(MM mm) {
+        Gift g = new WarmGift(new Flower());
+        give(mm, g);
+    }
+
+    public void give(MM mm, Gift g) {
+        System.out.println(g + "gived!");
+    }
+}
