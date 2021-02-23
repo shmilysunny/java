@@ -1,0 +1,53 @@
+java自带原型模式
+实现原型模式需要实现标记型接口cloneable
+一般会重写clone()方法
+如果只重写clone()方法，没实现接口，调用时会报异常
+需要区分深克隆和浅克隆
+
+class Person implements Cloneable {
+    int age = 8;
+    int score = 100;
+
+    Location loc = new Location("bj", 22);
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Person p = (Person)super.clone();
+        p.loc = (Location)loc.clone();  // 深克隆，location不克隆就是浅克隆
+        return p;
+    }
+
+}
+
+class Location implements Cloneable {
+    String street;
+    int roomNo;
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "street='" + street + '\'' +
+                ", roomNo=" + roomNo +
+                '}';
+    }
+
+    public Location(String street, int roomNo) {
+        this.street = street;
+        this.roomNo = roomNo;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Person p1 = new Person();
+        Person p2 = (Person) p1.clone();
+        System.out.println("p1.loc == p2.loc? " + (p1.loc == p2.loc));  \\ p1.loc == p2.loc? false
+
+        p1.loc.street = "sh";
+        System.out.println(p2.loc.street); \\ bj
+    }
+}
