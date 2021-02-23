@@ -1,9 +1,9 @@
 创建型模式
-abstract factory
+abstract factory※
 builder
-factory method
+factory method※
 prototype
-singleton
+singleton※
 
 结构型模式
 adapter
