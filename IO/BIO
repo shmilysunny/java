@@ -1,0 +1,39 @@
+public class Server {
+    public static void main(String[] args) throws IOException {
+        ServerSocket sc = new ServerSocket();
+        sc.bind(new InetSocketAddress("127.0.0.1", 8999));
+
+        while (true) {
+            Socket socket = sc.accept();
+
+            new Thread(() -> handle(socket)).start();
+        }
+    }
+
+    private static void handle(Socket socket) {
+        byte[] bytes = new byte[1024];
+        try {
+            int len = socket.getInputStream().read(bytes);
+            System.out.println(new String(bytes, 0, len));
+
+            socket.getOutputStream().write(bytes, 0, len);
+            socket.getOutputStream().flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+public class Client {
+    public static void main(String[] args) throws IOException {
+        Socket s = new Socket("127.0.0.1", 8999);
+        s.getOutputStream().write("HelloServer".getBytes());
+         s.getOutputStream().flush();
+
+        System.out.println("write over, waiting for msg back...");
+        byte[] bytes = new byte[1024];
+        int len = s.getInputStream().read(bytes);
+        System.out.println(new String(bytes, 0, len));
+        s.close();
+    }
+}
